@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-  # ---- Base de données ----
   db:
     image: postgres:16-alpine
     environment:
@@ -12,13 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U masterconnect"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
-  # ---- Backend Django ----
   backend:
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
@@ -27,22 +20,13 @@ services:
     environment:
       - DATABASE_URL=postgres://masterconnect:masterconnect_dev@db:5432/masterconnect
       - DEBUG=True
-      - DJANGO_SECRET_KEY=dev-secret-key-change-in-production
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
       - ./backend:/app
 
-  # ---- Frontend Next.js ----
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
-    depends_on:
-      - backend
+  # En dev, on lance le frontend en mode hot-reload SANS Docker
+  # → tu lances juste "cd frontend && npm run dev" en local
 
 volumes:
   pgdata:
