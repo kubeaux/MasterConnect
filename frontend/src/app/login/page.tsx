@@ -1,31 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/src/components/providers/AuthProvider";
+import { useRouter } from "next/navigation";
+import { login } from "@/src/lib/api";
 import Navbar from "@/src/components/layout/Navbar";
 import Input from "@/src/components/ui/Input";
 import Button from "@/src/components/ui/Button";
 import { KeyRound } from "lucide-react";
 import Link from "next/link";
-import toast from "react-hot-toast";
 
 export default function LoginPage() {
-  const { login } = useAuth();
-  const [identifiant, setIdentifiant] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setIsLoading(true);
 
     try {
-      await login(identifiant, password);
-      toast.success("Connexion réussie !");
-    } catch {
-      setError("Identifiants incorrects. Veuillez réessayer.");
+      await login(username, password);
+      router.push('/student'); 
+    } catch (err) {
+      setError('Identifiants ou mot de passe incorrect.');
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +52,7 @@ export default function LoginPage() {
 
           {/* Formulaire */}
           <div className="bg-white rounded-2xl border border-surface-200 shadow-card p-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-5">
               {error && (
                 <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-200">
                   {error}
@@ -63,8 +63,8 @@ export default function LoginPage() {
                 id="identifiant"
                 label="Identifiant / Email"
                 placeholder="ex: etudiant"
-                value={identifiant}
-                onChange={(e) => setIdentifiant(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
 
