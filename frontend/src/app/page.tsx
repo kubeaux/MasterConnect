@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, BookOpen, Users, CheckCircle, Award } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, CheckCircle } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -29,7 +29,7 @@ export default function Home() {
               <span className="text-blue-400">commencent ici</span>
             </h1>
             <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto font-light">
-              La plateforme officielle d'attribution des projets de fin d'études pour l'année universitaire 2025-2026.
+              La plateforme officielle d&apos;attribution des projets de fin d&apos;études pour l&apos;année universitaire 2025-2026.
             </p>
             
             <Link 
@@ -49,7 +49,7 @@ export default function Home() {
           >
             <figure>
               <blockquote className="text-lg italic text-gray-300 font-serif">
-                « L'excellence académique se construit par la recherche et l'innovation. »
+                « L&apos;excellence académique se construit par la recherche et l&apos;innovation. »
               </blockquote>
               <figcaption className="mt-2 text-sm text-blue-300 uppercase tracking-widest font-semibold">
                 — Le Doyen de la Faculté
@@ -64,7 +64,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Une gestion simplifiée et transparente</h2>
             <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-              Notre plateforme centralise l'ensemble du processus d'attribution des projets pour garantir l'équité et simplifier les démarches administratives.
+              Notre plateforme centralise l&apos;ensemble du processus d&apos;attribution des projets pour garantir l&apos;équité et simplifier les démarches administratives.
             </p>
           </div>
 
@@ -104,7 +104,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold sm:text-4xl">Comment ça marche ?</h2>
-            <p className="mt-4 text-slate-400">Le processus d'attribution en 4 étapes clés</p>
+            <p className="mt-4 text-slate-400">Le processus d&apos;attribution en 4 étapes clés</p>
           </div>
 
           <div className="relative">

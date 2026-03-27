@@ -53,7 +53,7 @@ export default function ProcessPage() {
       <div className="text-center mb-16">
         <h1 className="text-3xl font-bold text-slate-900 mb-4">Démarches et Calendrier</h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Comprendre le processus d'attribution pour maximiser vos chances d'obtenir le projet de vos rêves.
+          Comprendre le processus d&apos;attribution pour maximiser vos chances d&apos;obtenir le projet de vos rêves.
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export default function ProcessPage() {
       <div className="mt-16 bg-slate-900 text-white rounded-2xl p-8 md:p-12 text-center">
         <h2 className="text-2xl font-bold mb-4">Une question sur le processus ?</h2>
         <p className="text-slate-300 mb-8 max-w-xl mx-auto">
-          L'administration est disponible pour répondre à vos questions concernant les règles d'attribution ou les cas particuliers.
+          L&apos;administration est disponible pour répondre à vos questions concernant les règles d&apos;attribution ou les cas particuliers.
         </p>
         <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-lg shadow-blue-900/50">
           Contacter le support administratif

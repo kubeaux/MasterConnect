@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/src/lib/api";
-import type { User, LoginResponse } from "@/src/types";
+import type { User } from "@/src/types";
 
 interface AuthContextType {
   user: User | null;
@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (identifiant: string, password: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       identifiant_universitaire: identifiant,
       mot_de_passe: password,
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     const { data } = await authApi.login(payload);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const loginData = data as any;
     const token = loginData.access || loginData.token;
 

@@ -200,7 +200,7 @@ export default function LoginPage() {
                 onClick={() => setShowSignup(true)}
                 className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
               >
-                Vous êtes encadrant et vous n'avez pas encore un compte ?
+                Vous êtes encadrant et vous n&apos;avez pas encore de compte ?
               </button>
             </div>
           </div>
