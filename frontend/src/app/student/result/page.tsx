@@ -7,7 +7,6 @@ import Badge from "@/src/components/ui/Badge";
 import { Trophy, User as UserIcon, Calendar, Tag, BookOpen } from "lucide-react";
 import type { Assignment } from "@/src/types";
 import { formatDate, parseKeywords } from "@/src/lib/utils";
-import toast from "react-hot-toast";
 
 export default function StudentResultPage() {
   const [assignment, setAssignment] = useState<Assignment | null>(null);

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { projectsApi, wishesApi } from "@/src/lib/api";
 import ProjectCard from "@/src/components/features/ProjectCard";
-import Input from "@/src/components/ui/Input";
 import { DOMAINS } from "@/src/lib/constants";
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { Project, Wish } from "@/src/types";
