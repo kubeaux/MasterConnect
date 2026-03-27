@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { adminApi } from "@/src/lib/api";
-import Card, { CardContent } from "@/src/components/ui/Card";
+import Card from "@/src/components/ui/Card";
 import Badge from "@/src/components/ui/Badge";
 import { Search, Users } from "lucide-react";
 import toast from "react-hot-toast";
