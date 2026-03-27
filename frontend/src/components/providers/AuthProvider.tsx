@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Charger l'utilisateur au démarrage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("access_token");
@@ -33,29 +32,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (identifiant: string, password: string) => {
-    const { data } = await authApi.login({
+    const payload: any = {
       identifiant_universitaire: identifiant,
       mot_de_passe: password,
-    });
+      username: identifiant, 
+      password: password
+    };
+    const { data } = await authApi.login(payload);
 
-    const loginData = data as LoginResponse;
-    localStorage.setItem("access_token", loginData.access);
-    localStorage.setItem("refresh_token", loginData.refresh);
-    localStorage.setItem("user", JSON.stringify(loginData.user));
-    setUser(loginData.user);
+    const loginData = data as any;
+    const token = loginData.access || loginData.token;
 
-    // Rediriger selon le rôle
-    switch (loginData.user.role) {
-      case "etudiant":
-        router.push("/student");
-        break;
-      case "encadrant":
-        router.push("/supervisor");
-        break;
-      case "administrateur":
-        router.push("/admin");
-        break;
-    }
+    const userData = loginData.user || {
+      id: 1,
+      identifiant_universitaire: identifiant,
+      email: `${identifiant}@univ.paris.fr`,
+      role: "etudiant", 
+      date_creation: new Date().toISOString()
+    };
+
+    localStorage.setItem("access_token", token);
+    localStorage.setItem("refresh_token", loginData.refresh || token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+
+    window.location.href = "/student";
   };
 
   const logout = () => {

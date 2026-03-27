@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/src/components/providers/AuthProvider";
-import Navbar from "@/src/components/layout/Navbar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, BookOpen, Users, Settings } from "lucide-react";
@@ -36,9 +35,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <Navbar />
-
-      {/* Sous-navigation */}
       <nav className="bg-white border-b border-surface-200">
         <div className="page-container">
           <div className="flex gap-1 overflow-x-auto py-1">

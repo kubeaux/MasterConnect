@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/src/components/providers/AuthProvider";
+import Navbar from "@/src/components/layout/Navbar"; // <-- 1. Import de la Navbar
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,14 @@ export default function RootLayout({
     <html lang="fr">
       <body>
         <AuthProvider>
-          {children}
+          {/* 2. La Navbar est maintenant globale et protégera toutes les pages */}
+          <Navbar /> 
+          
+          {/* Le contenu spécifique de chaque page viendra s'injecter ici */}
+          <main>
+            {children}
+          </main>
+
           <Toaster
             position="top-right"
             toastOptions={{
