@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Trash2, ArrowRight, AlertCircle, GripVertical } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Reorder, useDragControls } from 'framer-motion';
+import { Reorder } from 'framer-motion';
 
 const mockProjects = [
   { id: 1, title: "Optimisation IA", department: "Informatique", supervisor: "Dr. Martin" },

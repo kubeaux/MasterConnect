@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Star, Info, CheckCircle, Lock, Users, XCircle, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Plus, Info, XCircle, Clock } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast, Toaster } from 'sonner';
 // import { useAuth } from '@/src/components/providers/AuthProvider'; // A décommenter quand l'auth est branchée
