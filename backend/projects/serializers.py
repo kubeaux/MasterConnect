@@ -11,3 +11,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'teacher',
             'capacity',
         ]
+
+    def validate_capacity(self, value):
+        if value < 1:
+            raise serializers.ValidationError("Capacity must be at least 1.")
+        return value
