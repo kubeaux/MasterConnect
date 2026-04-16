@@ -129,6 +129,8 @@ export const adminApi = {
     api.post(`/admin/projects/${id}/validate/`),
   rejectProject: (id: number) =>
     api.post(`/admin/projects/${id}/reject/`),
+  forceAssignment: (studentId: number, projectId: number | null) =>
+    api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
 };
 
 export const login = async (username: string, password: string) => {
