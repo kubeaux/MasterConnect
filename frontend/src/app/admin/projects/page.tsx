@@ -1,204 +1,144 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { projectsApi, adminApi } from "@/src/lib/api";
-import Card, { CardContent } from "@/src/components/ui/Card";
-import Badge from "@/src/components/ui/Badge";
-import Button from "@/src/components/ui/Button";
-import { Users, CheckCircle, XCircle, Tag } from "lucide-react";
-import type { Project } from "@/src/types";
-import { truncate, parseKeywords } from "@/src/lib/utils";
-import toast from "react-hot-toast";
+import React, { useState, useEffect } from 'react';
+import { projectsApi, campaignApi } from '@/src/lib/api';
+import { Edit2, Trash2 } from 'lucide-react';
+import { clsx } from 'clsx';
+import toast from 'react-hot-toast';
+import type { Project, Campaign } from '@/src/types'; 
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    loadProjects();
+    loadData();
   }, []);
 
-  const loadProjects = async () => {
+  const loadData = async () => {
     try {
-      const { data } = await projectsApi.getAll();
-      setProjects(data.results || data);
-    } catch {
-      toast.error("Erreur lors du chargement des projets");
+      const [projectsRes, campaignRes] = await Promise.all([
+        projectsApi.getAll(),
+        campaignApi.getCurrent()
+      ]);
+      setProjects(projectsRes.data.results || projectsRes.data);
+      setCampaign(campaignRes.data);
+    } catch (error) {
+      toast.error("Erreur lors du chargement des données");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleValidate = async (id: number) => {
+  const handlePriorityChange = async (targetProject: Project, newPriority: "PRIORITAIRE" | "NORMALE") => {
     try {
-      await adminApi.validateProject(id);
-      toast.success("Projet approuvé");
-      loadProjects();
-    } catch {
-      toast.error("Erreur lors de la validation");
+        setProjects(prevProjects => 
+            prevProjects.map(p => p.id === targetProject.id ? { ...p, priorite: newPriority } : p)
+        );
+        
+        await projectsApi.update(targetProject.id, { priorite: newPriority });
+        toast.success("Priorité mise à jour");
+    } catch (error) {
+        toast.error("Échec de la mise à jour");
+        loadData();
     }
   };
 
-  const handleReject = async (id: number) => {
-    try {
-      await adminApi.rejectProject(id);
-      toast.success("Projet refusé");
-      loadProjects();
-    } catch {
-      toast.error("Erreur lors du refus");
+  const handleDeleteProject = async (id: number) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+        try {
+            await projectsApi.delete(id);
+            setProjects(prevProjects => prevProjects.filter(p => p.id !== id));
+            toast.success("Projet supprimé");
+        } catch (error) {
+            toast.error("Erreur lors de la suppression du projet");
+        }
     }
   };
-
-  const filteredProjects = projects.filter((p) => {
-    if (filter === "all") return true;
-    return p.statut_validation === filter;
-  });
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-      </div>
-    );
+      return (
+          <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          </div>
+      );
   }
 
   return (
-    <div className="page-container py-8 fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">
-            Gestion des projets
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {projects.length} projet{projects.length > 1 ? "s" : ""} soumis par
-            les encadrants
-          </p>
-        </div>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
+      <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+          <h3 className="font-bold text-slate-700">Gestion des Projets ({projects.length})</h3>
+          <button className="text-sm text-blue-600 font-medium hover:underline">Télécharger CSV</button>
       </div>
-
-      {/* Filtres */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { value: "all", label: "Tous" },
-          { value: "EN_ATTENTE", label: "En attente" },
-          { value: "APPROUVE", label: "Approuvés" },
-          { value: "REFUSE", label: "Refusés" },
-        ].map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filter === f.value
-                ? "bg-primary-700 text-white"
-                : "bg-white text-gray-600 border border-surface-200 hover:bg-surface-100"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100">
+              <thead className="bg-slate-50">
+                  <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Titre / Encadrant</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Domaine</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Capacité</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Priorité</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-100">
+                  {projects.map((project: Project) => (
+                      <tr key={project.id} className="hover:bg-slate-50">
+                          <td className="px-6 py-4">
+                              <div className="text-sm font-medium text-slate-900 line-clamp-1" title={project.titre}>
+                                  {project.titre}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                  {(project.encadrant as any)?.nom || "Encadrant"}
+                              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {project.domaine}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {project.capacite} étudiants / {project.nb_equipes_max || 1} équipes
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                              <select 
+                                  value={project.priorite || "NORMALE"}
+                                  onChange={(e) => handlePriorityChange(project, e.target.value as "PRIORITAIRE" | "NORMALE")}
+                                  className={clsx(
+                                      "text-xs font-bold rounded-full px-2 py-1 border-0 focus:ring-2 cursor-pointer outline-none",
+                                      project.priorite === 'PRIORITAIRE' ? "bg-red-100 text-red-800 ring-red-500" :
+                                      "bg-gray-100 text-gray-800 ring-gray-500"
+                                  )}
+                                  disabled={campaign?.statut !== 'VERROUILLEE'}
+                              >
+                                  <option value="PRIORITAIRE">Prioritaire</option>
+                                  <option value="NORMALE">Normale</option>
+                              </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <button className="text-blue-600 hover:text-blue-900 mr-3" title="Éditer">
+                                  <Edit2 className="h-4 w-4" />
+                              </button>
+                              <button 
+                                  onClick={() => handleDeleteProject(Number(project.id))}
+                                  className="text-red-600 hover:text-red-900 disabled:opacity-30" 
+                                  title="Supprimer"
+                                  disabled={campaign?.statut !== 'VERROUILLEE'}
+                              >
+                                  <Trash2 className="h-4 w-4" />
+                              </button>
+                          </td>
+                      </tr>
+                  ))}
+                  {projects.length === 0 && (
+                      <tr>
+                          <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
+                              Aucun projet trouvé.
+                          </td>
+                      </tr>
+                  )}
+              </tbody>
+          </table>
       </div>
-
-      {/* Liste des projets */}
-      {filteredProjects.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-gray-400">Aucun projet trouvé pour ce filtre</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filteredProjects.map((project) => {
-            const keywords = parseKeywords(project.mots_cles);
-            return (
-              <Card key={project.id}>
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="info">{project.domaine}</Badge>
-                        {project.priorite === "PRIORITAIRE" && (
-                          <Badge variant="danger">Prioritaire</Badge>
-                        )}
-                        <Badge
-                          variant={
-                            project.statut_validation === "APPROUVE"
-                              ? "success"
-                              : project.statut_validation === "REFUSE"
-                              ? "danger"
-                              : "warning"
-                          }
-                        >
-                          {project.statut_validation === "APPROUVE"
-                            ? "Approuvé"
-                            : project.statut_validation === "REFUSE"
-                            ? "Refusé"
-                            : "En attente"}
-                        </Badge>
-                      </div>
-
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {project.titre}
-                      </h3>
-                      <p className="text-sm text-gray-500 mb-2">
-                        {truncate(project.description, 150)}
-                      </p>
-
-                      {keywords.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {keywords.map((kw) => (
-                            <span
-                              key={kw}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-100 text-gray-500 rounded text-xs"
-                            >
-                              <Tag className="w-2.5 h-2.5" />
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-4 text-xs text-gray-400">
-                        <span>
-                          Par {project.encadrant.prenom} {project.encadrant.nom}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {project.capacite} places
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions de validation */}
-                    {(!project.statut_validation ||
-                      project.statut_validation === "EN_ATTENTE") && (
-                      <div className="flex gap-2 flex-shrink-0">
-                        <Button
-                          size="sm"
-                          onClick={() => handleValidate(project.id)}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                          Approuver
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleReject(project.id)}
-                        >
-                          <XCircle className="w-3.5 h-3.5 mr-1" />
-                          Refuser
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
