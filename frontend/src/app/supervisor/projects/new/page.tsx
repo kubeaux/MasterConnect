@@ -1,229 +1,202 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { projectsApi } from "@/src/lib/api";
-import Input from "@/src/components/ui/Input";
-import Button from "@/src/components/ui/Button";
-import Card, { CardContent } from "@/src/components/ui/Card";
-import { DOMAINS } from "@/src/lib/constants";
-import { ArrowLeft, Sparkles } from "lucide-react";
-import Link from "next/link";
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { projectsApi } from '@/src/lib/api';
+import { Save, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+
+const projectSchema = z.object({
+  titre: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
+  domaine: z.string().min(2, "Le domaine est requis"),
+  
+  capacite: z.string()
+    .min(1, "La capacité est requise")
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, "Doit être un nombre supérieur ou égal à 1"),
+    
+  nb_equipes_max: z.string()
+    .min(1, "Le nombre d'équipes est requis")
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, "Doit être un nombre supérieur ou égal à 1"),
+    
+  mots_cles: z.string().min(2, "Renseignez au moins un mot-clé (ex: Python, IA)"),
+  description: z.string().min(20, "La description est trop courte (minimum 20 caractères)"),
+});
+
+type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({
-    titre: "",
-    description: "",
-    domaine: "",
-    mots_cles: "",
-    capacite: 3,
-    capacite_min: 1,
-    nb_equipes_max: 1,
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting }
+  } = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      capacite: "1",
+      nb_equipes_max: "1",
+    }
   });
 
-  const updateField = (field: string, value: string | number) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const titre = watch("titre");
+  const description = watch("description");
+
+  const generateTags = () => {
+    if (!titre || !description || titre.length < 5) {
+        toast.error("Remplissez le titre et la description d'abord");
+        return;
+    }
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+        const text = `${titre} ${description}`.toLowerCase();
+        const commonTags = ["python", "java", "react", "ia", "data", "web", "mobile", "docker", "sql", "django", "api"];
+        const foundTags = commonTags.filter(tag => text.includes(tag));
+        
+        if (foundTags.length > 0) {
+            setValue("mots_cles", foundTags.join(", "), { shouldValidate: true });
+            toast.success("Mots-clés générés !");
+        } else {
+            toast("Aucun mot-clé détecté", { icon: 'ℹ️' });
+        }
+        setIsGenerating(false);
+    }, 800);
   };
 
-  // Extraction basique de mots-clés depuis la description
-  const handleAutoKeywords = () => {
-    if (!form.description) {
-      toast.error("Remplissez d'abord la description");
-      return;
-    }
-    // Mots de plus de 5 lettres, uniques, hors mots courants
-    const stopWords = new Set([
-      "cette", "dans", "avec", "pour", "sera", "sont", "être", "avoir",
-      "plus", "nous", "vous", "leur", "notre", "votre", "comme",
-      "entre", "après", "avant", "aussi", "autre", "projet", "travail",
-      "permettre", "permettra", "utiliser", "développer", "mettre",
-    ]);
-    const words = form.description
-      .toLowerCase()
-      .replace(/[^a-zàâäéèêëïîôùûüç\s-]/g, "")
-      .split(/\s+/)
-      .filter((w) => w.length > 5 && !stopWords.has(w));
-    const unique = Array.from(new Set(words)).slice(0, 5);
-    updateField("mots_cles", unique.join(", "));
-    toast.success(`${unique.length} mot(s)-clé(s) extraits`);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!form.titre || !form.description || !form.domaine) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-
-    setIsLoading(true);
+  const onSubmit = async (data: ProjectFormValues) => {
     try {
-      await projectsApi.create({
-        titre: form.titre,
-        description: form.description,
-        domaine: form.domaine,
-        mots_cles: form.mots_cles,
-        capacite: form.capacite,
-        capacite_min: form.capacite_min,
-        nb_equipes_max: form.nb_equipes_max,
-      });
+      const payload = {
+          ...data,
+          capacite: parseInt(data.capacite, 10),
+          nb_equipes_max: parseInt(data.nb_equipes_max, 10),
+      };
+
+      await projectsApi.create(payload as any); 
       toast.success("Projet créé avec succès !");
-      router.push("/supervisor/projects");
-    } catch {
+      router.push("/supervisor"); 
+    } catch (error) {
       toast.error("Erreur lors de la création du projet");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <div className="page-container py-8 max-w-2xl mx-auto fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link
-          href="/supervisor/projects"
-          className="p-2 hover:bg-surface-100 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-500" />
+    <div className="max-w-4xl mx-auto px-4 py-8 fade-in">
+      <div className="mb-6">
+        <Link href="/supervisor" className="text-sm text-slate-500 hover:text-indigo-600 flex items-center gap-2 mb-4 w-fit transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">
-            Nouveau projet
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Proposez un sujet de recherche pour les étudiants de Master.
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">Nouveau Projet</h1>
+        <p className="text-slate-600">Proposez un sujet aux étudiants pour la campagne en cours.</p>
       </div>
 
-      {/* Formulaire */}
-      <Card>
-        <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Titre */}
-            <Input
-              id="titre"
-              label="Titre du projet *"
-              placeholder="ex: Intelligence Artificielle pour la détection de fraudes"
-              value={form.titre}
-              onChange={(e) => updateField("titre", e.target.value)}
-              required
-            />
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Description détaillée *
-              </label>
-              <textarea
-                id="description"
-                rows={5}
-                placeholder="Décrivez le sujet, les objectifs, les technologies utilisées..."
-                value={form.description}
-                onChange={(e) => updateField("description", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-surface-300 text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 placeholder:text-gray-400 hover:border-primary-300 resize-none"
-                required
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8 space-y-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Titre du projet *</label>
+              <input 
+                {...register("titre")}
+                type="text" 
+                placeholder="Ex: Application de gestion..."
+                className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.titre ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
               />
+              {errors.titre && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.titre.message}</p>}
             </div>
-
-            {/* Domaine */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="domaine"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Domaine *
-              </label>
-              <select
-                id="domaine"
-                value={form.domaine}
-                onChange={(e) => updateField("domaine", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-surface-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 hover:border-primary-300"
-                required
-              >
-                <option value="">Sélectionner un domaine</option>
-                {DOMAINS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Capacités */}
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                id="capacite"
-                label="Capacité maximale (étudiants)"
-                type="number"
-                min={1}
-                max={10}
-                value={form.capacite}
-                onChange={(e) =>
-                  updateField("capacite", parseInt(e.target.value) || 1)
-                }
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Domaine principal *</label>
+              <input 
+                {...register("domaine")}
+                type="text" 
+                placeholder="Ex: Intelligence Artificielle"
+                className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.domaine ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
               />
-              <Input
-                id="nb_equipes_max"
-                label="Nombre d'équipes max"
-                type="number"
-                min={1}
-                max={5}
-                value={form.nb_equipes_max}
-                onChange={(e) =>
-                  updateField("nb_equipes_max", parseInt(e.target.value) || 1)
-                }
-              />
+              {errors.domaine && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.domaine.message}</p>}
             </div>
+          </div>
 
-            {/* Mots-clés */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="mots_cles"
-                  className="block text-sm font-medium text-gray-700"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Capacité totale (Étudiants) *</label>
+              <input 
+                {...register("capacite")}
+                type="number" 
+                min="1"
+                className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.capacite ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
+              />
+              {errors.capacite && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.capacite.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre d'équipes max *</label>
+              <input 
+                {...register("nb_equipes_max")}
+                type="number" 
+                min="1"
+                className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.nb_equipes_max ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
+              />
+              {errors.nb_equipes_max && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.nb_equipes_max.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-semibold text-slate-700">Mots-clés *</label>
+                <button 
+                    type="button" 
+                    onClick={generateTags}
+                    disabled={isGenerating}
+                    className="text-xs text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
                 >
-                  Mots-clés (séparés par des virgules)
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAutoKeywords}
-                  className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  Générer via IA
+                    {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    Générer via IA
                 </button>
-              </div>
-              <input
-                id="mots_cles"
-                type="text"
-                placeholder="ex: Machine Learning, Python, TensorFlow"
-                value={form.mots_cles}
-                onChange={(e) => updateField("mots_cles", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-surface-300 text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 placeholder:text-gray-400 hover:border-primary-300"
-              />
             </div>
+            <input 
+              {...register("mots_cles")}
+              type="text" 
+              placeholder="Séparés par des virgules (Ex: Python, React, API)"
+              className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.mots_cles ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
+            />
+            {errors.mots_cles && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.mots_cles.message}</p>}
+          </div>
 
-            {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-surface-200">
-              <Link href="/supervisor/projects" className="flex-1">
-                <Button type="button" variant="secondary" className="w-full">
-                  Annuler
-                </Button>
-              </Link>
-              <Button type="submit" isLoading={isLoading} className="flex-1">
-                Enregistrer le projet
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Description détaillée *</label>
+            <textarea 
+              {...register("description")}
+              rows={5}
+              placeholder="Décrivez les objectifs, les technologies attendues et les livrables..."
+              className={`w-full p-3 rounded-lg border text-sm outline-none transition-all resize-none ${errors.description ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
+            />
+            {errors.description && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.description.message}</p>}
+          </div>
+
+          <div className="pt-6 border-t border-slate-100 flex justify-end gap-3">
+            <Link href="/supervisor">
+              <button type="button" className="px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                Annuler
+              </button>
+            </Link>
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="px-8 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Publier le projet
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
 }

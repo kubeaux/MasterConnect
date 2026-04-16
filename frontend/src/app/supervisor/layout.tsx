@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/src/components/providers/AuthProvider";
-import Navbar from "@/src/components/layout/Navbar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, FolderPlus, BookOpen } from "lucide-react";
@@ -35,7 +34,6 @@ export default function SupervisorLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <Navbar />
 
       {/* Sous-navigation */}
       <nav className="bg-white border-b border-surface-200">

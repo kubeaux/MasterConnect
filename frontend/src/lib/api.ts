@@ -1,9 +1,8 @@
 import axios from "axios";
+import type { User, Campaign, Project } from "@/src/types";
 
-// ── API URL configuration ──
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-// ── Instance Axios configurée ──
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -11,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// ── Intercepteur : ajouter le token JWT automatiquement ──
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("access_token");
@@ -22,16 +20,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Intercepteur : gérer l'expiration du token ──
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Si 401 et pas déjà retried, essayer de refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
         const refreshToken = localStorage.getItem("refresh_token");
         if (!refreshToken) throw new Error("No refresh token");
@@ -44,7 +39,6 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh échoué → déconnecter
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
@@ -52,117 +46,88 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );
 
 export default api;
 
-// ── Fonctions API par domaine ──
 
-// Auth
 export const authApi = {
   login: (data: { identifiant_universitaire: string; mot_de_passe: string }) =>
-    api.post("/token/", data),
+    api.post("/token/", {
+        username: data.identifiant_universitaire,
+        password: data.mot_de_passe
+    }),
   refresh: (refresh: string) =>
     api.post("/token/refresh/", { refresh }),
   register: (data: Record<string, string>) =>
     api.post("/users/register/", data),
 };
 
-// Projets
 export const projectsApi = {
-  getAll: (params?: Record<string, string>) =>
-    api.get("/projects/", { params }),
-  getById: (id: number) =>
-    api.get(`/projects/${id}/`),
-  create: (data: Record<string, unknown>) =>
-    api.post("/projects/", data),
-  update: (id: number, data: Record<string, unknown>) =>
-    api.patch(`/projects/${id}/`, data),
-  delete: (id: number) =>
-    api.delete(`/projects/${id}/`),
+  getAll: (params?: Record<string, string>) => api.get("/projects/", { params }),
+  getById: (id: number) => api.get(`/projects/${id}/`),
+  create: (data: Record<string, unknown>) => api.post("/projects/", data),
+  update: (id: number, data: Record<string, unknown>) => api.patch(`/projects/${id}/`, data),
+  delete: (id: number) => api.delete(`/projects/${id}/`),
 };
 
-// Voeux
-export const wishesApi = {
-  getMine: () =>
-    api.get("/wishes/"),
-  add: (projectId: number, rang: number) =>
-    api.post("/wishes/", { projet: projectId, rang }),
-  remove: (wishId: number) =>
-    api.delete(`/wishes/${wishId}/`),
-  reorder: (wishes: { id: number; rang: number }[]) =>
-    api.post("/wishes/reorder/", { wishes }),
-  validate: () =>
-    api.post("/wishes/validate/"),
-};
-
-// Campagne
 export const campaignApi = {
-  getCurrent: () =>
-    api.get("/campaigns/current/"),
-  updateStatus: (status: string) =>
-    api.post("/campaigns/update-status/", { statut: status }),
-  launchAlgorithm: () =>
-    api.post("/campaigns/launch-algorithm/"),
+  getCurrent: () => api.get("/campaigns/current/"),
+  updateStatus: (status: string) => api.post("/campaigns/update-status/", { statut: status }),
+  launchAlgorithm: () => api.post("/campaigns/launch-algorithm/"),
+  update: (id: number, data: Partial<Campaign>) => api.patch(`/campaigns/${id}/`, data),
 };
 
-// Affectations
-export const assignmentsApi = {
-  getMine: () =>
-    api.get("/assignments/mine/"),
-  getAll: () =>
-    api.get("/assignments/"),
-};
-
-// Admin
 export const adminApi = {
-  getStats: () =>
-    api.get("/admin/stats/"),
-  getSupervisors: () =>
-    api.get("/admin/supervisors/"),
-  getStudents: () =>
-    api.get("/admin/students/"),
-  validateProject: (id: number) =>
-    api.post(`/admin/projects/${id}/validate/`),
-  rejectProject: (id: number) =>
-    api.post(`/admin/projects/${id}/reject/`),
-  forceAssignment: (studentId: number, projectId: number | null) =>
-    api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
+  getStats: () => api.get("/admin/stats/"),
+  getSupervisors: () => api.get("/admin/supervisors/"),
+  getStudents: () => api.get("/admin/students/"),
+  validateProject: (id: number) => api.post(`/admin/projects/${id}/validate/`),
+  rejectProject: (id: number) => api.post(`/admin/projects/${id}/reject/`),
+  forceAssignment: (studentId: number, projectId: number | null) => 
+      api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
 };
 
-export const login = async (username: string, password: string) => {
+export const login = async (identifiant: string, mot_de_passe: string) => {
   try {
     const response = await fetch(`${API_URL}/token/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username: identifiant, password: mot_de_passe }),
     });
 
-    if (!response.ok) throw new Error('Identifiants incorrects');
+    if (!response.ok) {
+        const err = await response.json().catch(()=>({}));
+        console.error("Erreur retournée par Django:", err);
+        throw new Error('Identifiants incorrects');
+    }
 
     const data = await response.json();
     const token = data.access || data.token || data.access_token;
     
-    const fakeUser = {
+    let roleUser = "etudiant";
+    if (identifiant === "admin") roleUser = "administrateur";
+    if (identifiant === "prof") roleUser = "encadrant";
+
+    const currentUser = {
       id: 1,
-      identifiant_universitaire: username,
-      email: `${username}@univ.paris.fr`,
-      role: "etudiant",
+      identifiant_universitaire: identifiant,
+      email: `${identifiant}@univ.paris.fr`,
+      role: roleUser,
       date_creation: new Date().toISOString()
     };
 
     if (token) {
       localStorage.setItem('access_token', token);
       localStorage.setItem('refresh_token', data.refresh || token);
-      localStorage.setItem('user', JSON.stringify(fakeUser)); // Le fameux objet utilisateur manquant
+      localStorage.setItem('user', JSON.stringify(currentUser));
     }
     
-    return { ...data, user: fakeUser };
+    return { ...data, user: currentUser };
   } catch (error) {
-    console.error('Erreur API:', error);
+    console.error('Erreur API Login:', error);
     throw error;
   }
 };

@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { GraduationCap, ArrowRight, User, Lock } from 'lucide-react';
+import { GraduationCap, ArrowRight, User, Lock, Loader2 } from 'lucide-react';
 import { login } from '@/src/lib/api';
+import { useRouter } from 'next/navigation'; // Import indispensable pour la redirection
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
+  const router = useRouter(); // Initialisation du routeur
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,11 +22,23 @@ export default function LoginPage() {
 
     try {
       console.log("Tentative de connexion au backend...");
-      await login(username, password);
-      window.location.href = '/student'; 
+      const response = await login(username, password);
+      
+      const role = response.user?.role;
+      
+      if (role === 'administrateur') {
+        router.push('/admin');
+      } else if (role === 'encadrant') {
+        router.push('/supervisor');
+      } else {
+        router.push('/student');
+      }
+
+      toast.success("Connexion réussie !");
     } catch (err) {
       console.error('Erreur attrapée:', err);
       setError('Identifiants ou mot de passe incorrect.');
+      toast.error("Échec de la connexion");
     } finally {
       setIsLoading(false);
     }
