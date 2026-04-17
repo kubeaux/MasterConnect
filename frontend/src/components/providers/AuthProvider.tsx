@@ -2,13 +2,13 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/src/lib/api";
+import { login as apiLogin } from "@/src/lib/api";
 import type { User } from "@/src/types";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (identifiant: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isStudent: boolean;
   isSupervisor: boolean;
@@ -26,47 +26,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("access_token");
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Erreur parsing session", e);
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (identifiant: string, password: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
-      identifiant_universitaire: identifiant,
-      mot_de_passe: password,
-      username: identifiant, 
-      password: password
-    };
-    const { data } = await authApi.login(payload);
+  const login = async (username: string, password: string) => {
+    const response = await apiLogin(username, password);
+    
+    const userData = response.user;
+    const token = response.access || response.token;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const loginData = data as any;
-    const token = loginData.access || loginData.token;
+    if (token) {
+      document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+    }
 
-    const userData = loginData.user || {
-      id: 1,
-      identifiant_universitaire: identifiant,
-      email: `${identifiant}@univ.paris.fr`,
-      role: "etudiant", 
-      date_creation: new Date().toISOString()
-    };
-
-    localStorage.setItem("access_token", token);
-    localStorage.setItem("refresh_token", loginData.refresh || token);
-    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
 
-    window.location.href = "/student";
+    if (userData.role === "administrateur") {
+      window.location.href = "/admin";
+    } else if (userData.role === "encadrant") {
+      window.location.href = "/supervisor";
+    } else {
+      window.location.href = "/student";
+    }
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    
     setUser(null);
-    router.push("/");
+    window.location.href = "/login";
   };
 
   return (
@@ -86,10 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
-}
+};

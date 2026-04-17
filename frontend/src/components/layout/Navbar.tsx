@@ -85,7 +85,7 @@ export default function Navbar() {
                 </button>
                 <div className="flex items-center gap-3 pl-4 border-l border-blue-800">
                   <div className="text-right hidden lg:block">
-                    <p className="text-sm font-semibold text-white">{user.identifiant_universitaire || 'Utilisateur'}</p>
+                    <p className="text-sm font-semibold text-white">{user.username || 'Utilisateur'}</p>
                     <p className="text-xs text-blue-300 capitalize">{user.role}</p>
                   </div>
                   <div className="h-9 w-9 rounded-full bg-blue-700 flex items-center justify-center border-2 border-blue-500">

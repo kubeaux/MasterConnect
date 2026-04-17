@@ -24,7 +24,6 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -52,17 +51,13 @@ api.interceptors.response.use(
 
 export default api;
 
-
 export const authApi = {
-  login: (data: { identifiant_universitaire: string; mot_de_passe: string }) =>
-    api.post("/token/", {
-        username: data.identifiant_universitaire,
-        password: data.mot_de_passe
-    }),
+  login: (data: { username: string; password: string }) =>
+    api.post("/token/", data),
   refresh: (refresh: string) =>
     api.post("/token/refresh/", { refresh }),
-  register: (data: Record<string, string>) =>
-    api.post("/users/register/", data),
+  register: (data: { username: string; password: string; email?: string; role?: string }) =>
+    api.post("/users/", data),
 };
 
 export const projectsApi = {
@@ -90,12 +85,12 @@ export const adminApi = {
       api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
 };
 
-export const login = async (identifiant: string, mot_de_passe: string) => {
+export const login = async (username: string, password: string) => {
   try {
     const response = await fetch(`${API_URL}/token/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: identifiant, password: mot_de_passe }),
+      body: JSON.stringify({ username, password }),
     });
 
     if (!response.ok) {
@@ -108,13 +103,13 @@ export const login = async (identifiant: string, mot_de_passe: string) => {
     const token = data.access || data.token || data.access_token;
     
     let roleUser = "etudiant";
-    if (identifiant === "admin") roleUser = "administrateur";
-    if (identifiant === "prof") roleUser = "encadrant";
+    if (username === "admin") roleUser = "administrateur";
+    if (username === "prof") roleUser = "encadrant";
 
     const currentUser = {
       id: 1,
-      identifiant_universitaire: identifiant,
-      email: `${identifiant}@univ.paris.fr`,
+      username: username,
+      email: `${username}@univ.paris.fr`,
       role: roleUser,
       date_creation: new Date().toISOString()
     };
@@ -131,3 +126,5 @@ export const login = async (identifiant: string, mot_de_passe: string) => {
     throw error;
   }
 };
+
+export const fetcher = (url: string) => api.get(url).then(res => res.data);

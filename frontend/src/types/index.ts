@@ -1,7 +1,7 @@
 // ── Utilisateurs ──
 export interface User {
   id: number;
-  identifiant_universitaire: string;
+  username: string;
   email: string;
   role: "etudiant" | "encadrant" | "administrateur";
   date_creation: string;
