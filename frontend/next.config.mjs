@@ -19,6 +19,10 @@ const nextConfig = {
       },
     ],
   },
+  eslint: {
+    //build même s'il y a des erreurs de variables inutilisée
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

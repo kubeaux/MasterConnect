@@ -38,6 +38,7 @@ INSTALLED_APPS = [
 
     # 🔥 API (VERY IMPORTANT)
     'rest_framework',
+    #allow cross-origin requests from react frontend
     'corsheaders',
 ]
 
@@ -47,8 +48,9 @@ INSTALLED_APPS = [
 # =========================
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  #required for CORS
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,8 +58,30 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+#requests coming from react frontend allowed
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 
+# Autorise l'envoi de headers spécifiques comme l'Authorization (pour les Tokens)
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
 # =========================
 # URLS & TEMPLATES
 # =========================
@@ -159,13 +183,3 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
-
-# =========================
-# 🔥 CORS CONFIG
-# =========================
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-
-CORS_ALLOW_CREDENTIALS = True
