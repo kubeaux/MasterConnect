@@ -72,7 +72,7 @@ export const campaignApi = {
   getCurrent: async () => {
     const defaultDates = {
       date_debut: new Date().toISOString(),
-      date_fin: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(), // Date de fin = +1 mois
+      date_fin: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
     };
 
     try {
@@ -80,21 +80,20 @@ export const campaignApi = {
       const assignments = assignRes.data?.results || assignRes.data || [];
       
       if (assignments.length > 0) {
-        return { data: { id: 1, statut: "terminee", nom: "Campagne d'Affectation", ...defaultDates } };
+        return { data: { id: 1, statut: "PUBLIEE", nom: "Campagne d'Affectation", ...defaultDates } };
       }
 
       const projRes = await api.get("/projects/");
       const projects = projRes.data?.results || projRes.data || [];
 
       if (projects.length > 0) {
-        return { data: { id: 1, statut: "en_cours", nom: "Campagne d'Affectation", ...defaultDates } };
+        return { data: { id: 1, statut: "OUVERTE", nom: "Campagne d'Affectation", ...defaultDates } };
       }
 
-      return { data: { id: 1, statut: "en_attente", nom: "Campagne d'Affectation", ...defaultDates } };
+      return { data: { id: 1, statut: "VERROUILLEE", nom: "Campagne d'Affectation", ...defaultDates } };
 
     } catch (error) {
-      console.warn("Mode de secours activé pour la campagne");
-      return { data: { id: 1, statut: "en_cours", nom: "Campagne (Mode Secours)", ...defaultDates } };
+      return { data: { id: 1, statut: "OUVERTE", nom: "Campagne (Mode Secours)", ...defaultDates } };
     }
   },
 

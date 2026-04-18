@@ -36,13 +36,22 @@ export default function StudentDashboardPage() {
         wishesApi.getMine(),
         campaignApi.getCurrent(),
       ]);
-      setWishes(wishRes.data.results || wishRes.data);
+      
+      let rawWishes = wishRes.data?.results || wishRes.data;
+      if (!Array.isArray(rawWishes)) rawWishes = [];
+      
+      const myWishes = rawWishes.filter((w: any) => 
+        w.student === user?.id || w.student?.id === user?.id || !w.student
+      );
+      setWishes(myWishes);
+      
       setCampaign(campRes.data);
 
       if (campRes.data?.statut === "PUBLIEE") {
         try {
           const assignRes = await assignmentsApi.getMine();
-          setAssignment(assignRes.data);
+          const assignData = assignRes.data?.results || assignRes.data;
+          setAssignment(Array.isArray(assignData) ? assignData[0] : assignData);
         } catch {
         }
       }
@@ -51,6 +60,16 @@ export default function StudentDashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatStatus = (status?: string) => {
+    if (!status) return "—";
+    const statusMap: Record<string, string> = {
+      "OUVERTE": "Ouverte",
+      "VERROUILLEE": "Verrouillée",
+      "PUBLIEE": "Publiée",
+    };
+    return statusMap[status] || status;
   };
 
   if (loading) {
@@ -66,7 +85,6 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="page-container py-8 fade-in">
-      {/* Salutation */}
       <div className="mb-8">
         <h1 className="font-heading text-2xl font-bold text-gray-900">
           Bonjour{user ? `, ${user.username}` : ""} 👋
@@ -76,7 +94,6 @@ export default function StudentDashboardPage() {
         </p>
       </div>
 
-      {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <KpiCard
           title="Mes vœux"
@@ -86,7 +103,7 @@ export default function StudentDashboardPage() {
         />
         <KpiCard
           title="Statut campagne"
-          value={campaign?.statut || "—"}
+          value={formatStatus(campaign?.statut)}
           icon={Clock}
           color={isOpen ? "green" : isPublished ? "blue" : "yellow"}
         />
@@ -111,9 +128,7 @@ export default function StudentDashboardPage() {
         />
       </div>
 
-      {/* Actions rapides */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Carte vœux */}
         <Card hover>
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
@@ -138,7 +153,6 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Carte gestion vœux */}
         <Card hover>
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
@@ -165,7 +179,6 @@ export default function StudentDashboardPage() {
         </Card>
       </div>
 
-      {/* Résultat d'affectation si publié */}
       {assignment && (
         <div className="mt-8 bg-green-50 border border-green-200 rounded-xl p-6">
           <div className="flex items-start gap-4">
@@ -175,7 +188,7 @@ export default function StudentDashboardPage() {
                 Votre projet a été attribué !
               </h3>
               <p className="text-green-700">
-                <strong>{typeof assignment.projet === "object" ? assignment.projet.titre : ""}</strong>
+                <strong>{(assignment as any).projet?.titre || (assignment as any).project?.title || "Consultez les détails de votre affectation"}</strong>
               </p>
               <Link
                 href="/student/result"
