@@ -1,7 +1,7 @@
 import os
 import django
 import random
-from Faker import Faker
+from faker import Faker
 
 # 1. Configuration de Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')

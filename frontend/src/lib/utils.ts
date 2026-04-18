@@ -21,8 +21,9 @@ export function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength).trimEnd() + "…";
 }
 
-/** Parser les mots-clés (string séparés par virgule) en tableau */
-export function parseKeywords(keywords: string): string[] {
+export function parseKeywords(keywords?: string | null): string[] {
+  if (!keywords) return [];
+  
   return keywords
     .split(",")
     .map((k) => k.trim())

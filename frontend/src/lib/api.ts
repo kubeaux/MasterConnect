@@ -85,6 +85,18 @@ export const adminApi = {
       api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
 };
 
+export const wishesApi = {
+  getMine: () => api.get("/wishes/"),
+  create: (data: Record<string, unknown>) => api.post("/wishes/", data),
+  update: (id: number, data: Record<string, unknown>) => api.patch(`/wishes/${id}/`, data),
+  delete: (id: number) => api.delete(`/wishes/${id}/`),
+};
+
+export const assignmentsApi = {
+  getMyAssignment: () => api.get("/assignments/"),
+  getMine: () => api.get("/assignments/"),
+};
+
 export const login = async (username: string, password: string) => {
   try {
     const response = await fetch(`${API_URL}/token/`, {
