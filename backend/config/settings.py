@@ -172,19 +172,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # =========================
 
 REST_FRAMEWORK = {
-    # Default permissions (we keep it open for now)
-  'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.IsAuthenticated',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
-
-    # Use basic JSON responses
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-
-    'DEFAULT_ATHENTICATION_CLASSES': (
-        'rest_framwork_simplejwt.authentication.JWTAuthentication',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
 }

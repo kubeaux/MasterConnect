@@ -39,13 +39,11 @@ export default function StudentDashboardPage() {
       setWishes(wishRes.data.results || wishRes.data);
       setCampaign(campRes.data);
 
-      // Charger l'affectation si la campagne est publiée
       if (campRes.data?.statut === "PUBLIEE") {
         try {
           const assignRes = await assignmentsApi.getMine();
           setAssignment(assignRes.data);
         } catch {
-          // Pas encore d'affectation
         }
       }
     } catch {
@@ -71,7 +69,7 @@ export default function StudentDashboardPage() {
       {/* Salutation */}
       <div className="mb-8">
         <h1 className="font-heading text-2xl font-bold text-gray-900">
-          Bonjour{user ? `, ${user.identifiant_universitaire}` : ""} 👋
+          Bonjour{user ? `, ${user.username}` : ""} 👋
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           Voici un résumé de votre campagne d&apos;attribution de projets.
