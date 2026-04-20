@@ -9,9 +9,6 @@ class WishViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff or getattr(user, 'is_superuser', False):
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
             return Wish.objects.all()
         return Wish.objects.filter(student=user)
-
-    def perform_create(self, serializer):
-        serializer.save(student=self.request.user)
