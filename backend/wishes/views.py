@@ -15,7 +15,7 @@ class WishViewSet(viewsets.ModelViewSet):
         if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
             return Wish.objects.all()
         return Wish.objects.filter(student=user)
-
+    
     @action(detail=False, methods=['post'], url_path='reorder')
     def reorder(self, request):
         user = request.user
@@ -27,11 +27,13 @@ class WishViewSet(viewsets.ModelViewSet):
         try:
             with transaction.atomic():
                 for item in wishes_data:
-                    Wish.objects.filter(id=item['id'], student=user).update(rank=-item['id'])
+                    Wish.objects.filter(id=item['id'], student=user).update(rank=1000 + int(item['id']))
 
                 for item in wishes_data:
-                    Wish.objects.filter(id=item['id'], student=user).update(rank=item['rank'])
+                    Wish.objects.filter(id=item['id'], student=user).update(rank=int(item['rank']))
 
             return Response({"message": "Classement sauvegardé !"}, status=200)
+            
         except Exception as e:
-            return Response({"error": "Erreur lors de la sauvegarde"}, status=400)
+            print(f"ERREUR CRITIQUE REORDER : {str(e)}") 
+            return Response({"error": f"Erreur lors de la sauvegarde : {str(e)}"}, status=400)
