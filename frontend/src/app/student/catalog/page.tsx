@@ -52,9 +52,11 @@ export default function StudentCatalog() {
     try {
       await wishesApi.create({
         project: projectId,
-        rank: myWishes.length + 1
+        rank: myWishes.length + 1      
       });
+
       toast.success("Projet ajouté à vos vœux !");
+      fetchData();
     } catch (error) {
       toast.error("Erreur lors de l'ajout du vœu");
     } finally {
