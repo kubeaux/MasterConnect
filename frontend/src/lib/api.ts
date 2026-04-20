@@ -117,6 +117,7 @@ export const wishesApi = {
   create: (data: Record<string, unknown>) => api.post("/wishes/", data),
   update: (id: number, data: Record<string, unknown>) => api.patch(`/wishes/${id}/`, data),
   delete: (id: number) => api.delete(`/wishes/${id}/`),
+  reorder: (data: {id: number, rank: number}[]) => api.post("/wishes/reorder/", data),
 };
 
 export const assignmentsApi = {

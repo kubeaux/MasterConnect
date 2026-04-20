@@ -58,9 +58,10 @@ export default function StudentWishes() {
   const saveOrder = async () => {
     setSaving(true);
     try {
-      await Promise.all(wishes.map(w => 
-        wishesApi.update(w.id, { rank: w.rank })
-      ));
+      const payload = wishes.map(w => ({ id: w.id, rank: w.rank }));
+      
+      await wishesApi.reorder(payload);
+      
       toast.success("Votre classement a bien été enregistré !");
     } catch (error) {
       toast.error("Erreur lors de la sauvegarde du classement");
