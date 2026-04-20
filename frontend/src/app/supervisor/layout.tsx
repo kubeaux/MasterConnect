@@ -43,7 +43,7 @@ export default function SupervisorLayout({ children }: { children: React.ReactNo
               const isActive =
                 item.href === "/supervisor"
                   ? pathname === "/supervisor"
-                  : pathname.startsWith(item.href);
+                  : pathname === item.href;
               return (
                 <Link
                   key={item.href}
