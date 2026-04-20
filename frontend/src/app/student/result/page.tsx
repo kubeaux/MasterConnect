@@ -1,144 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { assignmentsApi } from "@/src/lib/api";
-import Card, { CardContent } from "@/src/components/ui/Card";
-import Badge from "@/src/components/ui/Badge";
-import { Trophy, User as UserIcon, Calendar, Tag, BookOpen } from "lucide-react";
-import type { Assignment } from "@/src/types";
-import { formatDate, parseKeywords } from "@/src/lib/utils";
+import React, { useEffect, useState } from "react";
+import { Trophy, CheckCircle, Clock, ArrowRight, Loader2, BookOpen } from "lucide-react";
+import { assignmentsApi, campaignApi } from "@/src/lib/api";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function StudentResultPage() {
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [assignment, setAssignment] = useState<any | null>(null);
+  const [isCampaignClosed, setIsCampaignClosed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
-    loadResult();
+    fetchResult();
   }, []);
 
-  const loadResult = async () => {
+  const fetchResult = async () => {
     try {
-      const { data } = await assignmentsApi.getMine();
-      setAssignment(data);
-    } catch {
-      setError(true);
+      const campRes = await campaignApi.getCurrent();
+      const status = campRes.data?.statut;
+      
+      if (status === "PUBLIEE" || status === "terminee") {
+        setIsCampaignClosed(true);
+        const assignRes = await assignmentsApi.getMine();
+        const rawData = assignRes.data?.results || assignRes.data;
+        if (Array.isArray(rawData) && rawData.length > 0) {
+          setAssignment(rawData[0]);
+        } else if (!Array.isArray(rawData) && rawData?.id) {
+          setAssignment(rawData);
+        }
+      }
+    } catch (error) {
+      toast.error("Impossible de récupérer vos résultats.");
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-      </div>
-    );
+    return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-blue-600" /></div>;
   }
-
-  if (error || !assignment) {
-    return (
-      <div className="page-container py-8 fade-in">
-        <div className="max-w-lg mx-auto text-center py-16">
-          <div className="inline-flex p-4 bg-surface-100 rounded-2xl mb-4">
-            <Trophy className="w-10 h-10 text-gray-400" />
-          </div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">
-            Résultats non disponibles
-          </h1>
-          <p className="text-gray-500">
-            Les résultats d&apos;affectation n&apos;ont pas encore été publiés.
-            Vous serez notifié dès que la campagne sera terminée.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const project = assignment.projet;
-  const keywords =
-    typeof project === "object" && project.mots_cles
-      ? parseKeywords(project.mots_cles)
-      : [];
 
   return (
-    <div className="page-container py-8 max-w-2xl mx-auto fade-in">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex p-4 bg-green-50 rounded-2xl mb-4">
-          <Trophy className="w-10 h-10 text-green-600" />
+    <div className="max-w-4xl mx-auto px-4 py-12 fade-in">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center p-4 bg-blue-50 rounded-full mb-4">
+          <Trophy className="h-10 w-10 text-blue-600" />
         </div>
-        <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">
-          Votre projet attribué
-        </h1>
-        <p className="text-gray-500">
-          Félicitations ! Voici le projet qui vous a été assigné.
+        <h1 className="text-3xl font-bold text-slate-900">Résultat d&apos;Affectation</h1>
+        <p className="text-slate-600 mt-2 max-w-xl mx-auto">
+          Découvrez le projet qui vous a été attribué par l&apos;algorithme d&apos;optimisation pour cette année universitaire.
         </p>
       </div>
 
-      {/* Carte résultat */}
-      {typeof project === "object" && (
-        <Card>
-          <CardContent className="p-8">
-            {/* Domaine + Priorité */}
-            <div className="flex items-center gap-2 mb-4">
-              <Badge variant="info">{project.domaine}</Badge>
-              {project.priorite === "PRIORITAIRE" && (
-                <Badge variant="danger">Prioritaire</Badge>
-              )}
-            </div>
-
-            {/* Titre */}
-            <h2 className="font-heading text-xl font-bold text-gray-900 mb-3">
-              {project.titre}
-            </h2>
-
-            {/* Description */}
-            <p className="text-gray-600 leading-relaxed mb-6">
-              {project.description}
+      {!isCampaignClosed ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center max-w-2xl mx-auto">
+          <Clock className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-amber-900 mb-2">Campagne en cours</h2>
+          <p className="text-amber-800 mb-6">
+            L&apos;algorithme d&apos;affectation n&apos;a pas encore été exécuté ou les résultats ne sont pas encore publiés par l&apos;administration.
+          </p>
+          <Link href="/student" className="inline-flex items-center gap-2 bg-white text-amber-700 font-medium px-6 py-2.5 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors shadow-sm">
+            Retour au tableau de bord
+          </Link>
+        </div>
+      ) : assignment ? (
+        <div className="bg-white border border-green-200 shadow-lg rounded-2xl p-8 max-w-2xl mx-auto relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+          <div className="flex items-center gap-4 mb-6">
+            <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
+            <h2 className="text-2xl font-bold text-slate-900">Félicitations !</h2>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8 text-left">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block">Projet Attribué</span>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              {assignment.projet?.titre || assignment.project?.title || "Titre du projet indisponible"}
+            </h3>
+            <p className="text-slate-600 text-sm">
+              {assignment.projet?.description || assignment.project?.description || "Aucune description détaillée."}
             </p>
-
-            {/* Mots-clés */}
-            {keywords.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {keywords.map((kw) => (
-                  <span
-                    key={kw}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-surface-100 text-gray-600 rounded-lg text-xs"
-                  >
-                    <Tag className="w-3 h-3" />
-                    {kw}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Infos complémentaires */}
-            <div className="border-t border-surface-200 pt-5 space-y-3">
-              <div className="flex items-center gap-3 text-sm">
-                <UserIcon className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-500">Encadrant :</span>
-                <span className="text-gray-900 font-medium">
-                  {project.encadrant.prenom} {project.encadrant.nom}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <BookOpen className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-500">Capacité :</span>
-                <span className="text-gray-900 font-medium">
-                  {project.capacite} étudiant{project.capacite > 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-500">Affecté le :</span>
-                <span className="text-gray-900 font-medium">
-                  {formatDate(assignment.date_affectation)}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex justify-center">
+             <Link href="/student" className="inline-flex items-center gap-2 bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+               Tableau de bord <ArrowRight className="h-4 w-4" />
+             </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center max-w-2xl mx-auto">
+          <BookOpen className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Aucune affectation trouvée</h2>
+          <p className="text-slate-600 mb-6">
+            Vous n&apos;avez pas reçu d&apos;affectation pour cette campagne. Veuillez contacter l&apos;administration.
+          </p>
+          <Link href="/student" className="inline-flex items-center gap-2 bg-white text-slate-700 font-medium px-6 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm">
+            Retour
+          </Link>
+        </div>
       )}
     </div>
   );

@@ -1,140 +1,145 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Search, Plus, Info, XCircle, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Info, Loader2, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { toast, Toaster } from 'sonner';
-// import { useAuth } from '@/src/components/providers/AuthProvider'; // A décommenter quand l'auth est branchée
+import { useAuth } from "@/src/components/providers/AuthProvider";
+import { wishesApi, projectsApi } from "@/src/lib/api";
+import toast from "react-hot-toast";
 
-const mockProjects = [
-  { id: 1, title: "Optimisation IA", description: "Projet de recherche sur les LLM.", department: "Informatique", supervisor: "Dr. Martin", tags: ["Python", "TensorFlow"], slots: 2, maxTeams: 1 },
-  { id: 2, title: "Application Mobile Santé", description: "Création d'une app React Native.", department: "Santé Publique", supervisor: "Pr. Dubois", tags: ["React Native", "Firebase"], slots: 4, maxTeams: 2 },
-];
-const mockSettings = { status: 'OPEN', wishEnd: '2026-05-01T23:59:59' };
+export default function StudentCatalog() {
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<any[]>([]);
+  const [myWishes, setMyWishes] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [addingId, setAddingId] = useState<number | null>(null);
 
-const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) => {
-    if (!isOpen) return null;
-    return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-between items-center p-6 border-b border-slate-100">
-            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-              <XCircle className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="p-6">{children}</div>
-        </div>
-      </div>
-    );
-};
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-export default function StudentDashboard() {
-  // const { user } = useAuth(); // Vrai utilisateur
-  const [wishes, setWishes] = useState<any[]>([]); 
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDept, setSelectedDept] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'title' | 'slots'>('title');
-  const [viewingProject, setViewingProject] = useState<any>(null);
+  const fetchData = async () => {
+    try {
+      const [projRes, wishRes] = await Promise.all([
+        projectsApi.getAll(),
+        wishesApi.getMine()
+      ]);
+      
+      const rawProjects = projRes.data?.results || projRes.data || [];
+      setProjects(Array.isArray(rawProjects) ? rawProjects : []);
 
-  const allDepts = Array.from(new Set(mockProjects.map(p => p.department)));
+      const rawWishes = wishRes.data?.results || wishRes.data || [];
+      const filteredWishes = (Array.isArray(rawWishes) ? rawWishes : []).filter((w: any) => 
+        w.student === user?.id || w.student?.id === user?.id || !w.student
+      );
+      setMyWishes(filteredWishes);
 
-  const handleAddToWishes = (projectId: number) => {
-    if (wishes.length >= 5) {
-      toast.error("Vous ne pouvez pas ajouter plus de 5 vœux.");
+    } catch (error) {
+      toast.error("Erreur lors du chargement du catalogue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddWish = async (projectId: number) => {
+    if (myWishes.length >= 5) {
+      toast.error("Vous avez déjà atteint la limite maximale de 5 vœux.");
       return;
     }
-    setWishes([...wishes, { projectId, rank: wishes.length + 1 }]);
-    toast.success("Projet ajouté à vos vœux");
+    
+    setAddingId(projectId);
+    try {
+      await wishesApi.create({
+        project: projectId,
+        rank: myWishes.length + 1
+      });
+      toast.success("Projet ajouté à vos vœux !");
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout du vœu");
+    } finally {
+      setAddingId(null);
+    }
   };
 
-  const handleRemoveFromWishes = (projectId: number) => {
-    setWishes(wishes.filter(w => w.projectId !== projectId));
-    toast.info("Projet retiré des vœux");
-  };
+  const filteredProjects = projects.filter(p => 
+    p.title?.toLowerCase().includes(search.toLowerCase()) ||
+    p.titre?.toLowerCase().includes(search.toLowerCase()) ||
+    p.description?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const filteredProjects = mockProjects.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDept = selectedDept === 'all' || p.department === selectedDept;
-    return matchesSearch && matchesDept;
-  }).sort((a, b) => {
-      if (sortBy === 'title') return a.title.localeCompare(b.title);
-      return b.slots - a.slots;
-  });
+  if (loading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin h-8 w-8 text-blue-600" /></div>;
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Toaster position="top-right" />
-      
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-            <h1 className="text-2xl font-bold text-slate-900">Liste des projets disponibles</h1>
-            <p className="text-slate-600">Explorez et sélectionnez vos sujets de master pour l'année 2025-2026.</p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold shadow-sm">
-            <Clock className="h-4 w-4" />
-            <span>Statut : <span className="text-blue-900">Ouvert</span></span>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 py-8 fade-in">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Catalogue des Projets</h1>
+        <p className="text-slate-600 mt-1">Explorez les sujets de recherche et constituez votre liste de vœux (Maximum 5).</p>
       </div>
 
-      <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6 flex gap-4">
-        <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-            <input
-                type="text"
-                placeholder="Rechercher par titre..."
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className="relative mb-8 max-w-xl">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-slate-400" />
         </div>
-        <select
-            className="border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
-            value={selectedDept}
-            onChange={(e) => setSelectedDept(e.target.value)}
-        >
-            <option value="all">Tous les domaines</option>
-            {allDepts.map(dept => <option key={dept} value={dept}>{dept}</option>)}
-        </select>
+        <input
+          type="text"
+          className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all"
+          placeholder="Rechercher par titre ou mot-clé..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredProjects.map((project) => {
-          const isSelected = wishes.some(w => w.projectId === project.id);
-          return (
-            <div key={project.id} className={clsx("bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow", isSelected ? "border-blue-300 ring-1 ring-blue-100" : "border-slate-200")}>
-              <div className="flex justify-between items-start mb-4">
-                <span className="inline-block px-2 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-full">{project.department}</span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">{project.title}</h3>
-              <p className="text-sm text-slate-600 mb-4 line-clamp-2">{project.description}</p>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <button onClick={() => setViewingProject(project)} className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-blue-50">
-                  <Info className="h-4 w-4" /> Détails
-                </button>
-                <button
-                  onClick={() => isSelected ? handleRemoveFromWishes(project.id) : handleAddToWishes(project.id)}
-                  className={clsx("flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors", isSelected ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-blue-600 text-white hover:bg-blue-700")}
-                >
-                  {isSelected ? "Retirer" : <><Plus className="h-4 w-4" /> Ajouter</>}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProjects.length === 0 ? (
+           <div className="col-span-full text-center py-12 text-slate-500">Aucun projet ne correspond à votre recherche.</div>
+        ) : (
+          filteredProjects.map((project) => {
+            const isAlreadyWished = myWishes.some(w => w.project === project.id || w.projet === project.id || w.project?.id === project.id);
 
-      {viewingProject && (
-          <Modal isOpen={!!viewingProject} onClose={() => setViewingProject(null)} title="Détails du projet">
-              <div className="space-y-4">
-                  <h4 className="text-xl font-bold text-slate-900">{viewingProject.title}</h4>
-                  <p className="text-slate-600">{viewingProject.description}</p>
-                  <p className="text-sm font-bold mt-4">Encadrant : {viewingProject.supervisor}</p>
+            return (
+              <div key={project.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden">
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Capacité : {project.capacity || project.capacite || 1} étudiant(s)
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2">{project.title || project.titre}</h3>
+                  <p className="text-sm text-slate-600 mb-6 flex-1 line-clamp-4">
+                    {project.description || "Aucune description détaillée n'a été fournie pour ce projet."}
+                  </p>
+                </div>
+                
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 mt-auto">
+                  <button
+                    onClick={() => handleAddWish(project.id)}
+                    disabled={isAlreadyWished || myWishes.length >= 5 || addingId === project.id}
+                    className={clsx(
+                      "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      isAlreadyWished 
+                        ? "bg-emerald-100 text-emerald-700 cursor-not-allowed"
+                        : myWishes.length >= 5 
+                          ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                          : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                    )}
+                  >
+                    {addingId === project.id ? (
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isAlreadyWished ? (
+                      <> <CheckCircle className="h-4 w-4" /> Déjà dans vos vœux </>
+                    ) : (
+                      <> <Plus className="h-4 w-4" /> Ajouter aux vœux </>
+                    )}
+                  </button>
+                </div>
               </div>
-          </Modal>
-      )}
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
