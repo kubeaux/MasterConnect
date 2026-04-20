@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Wish
+from projects.serializers import ProjectSerializer
 
 class WishSerializer(serializers.ModelSerializer):
     student = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -7,6 +8,12 @@ class WishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wish
         fields = ['id', 'student', 'project', 'rank']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.project:
+            representation['project'] = ProjectSerializer(instance.project).data
+        return representation
 
     def validate(self, data):
         student = data.get('student')
