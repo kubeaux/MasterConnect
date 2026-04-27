@@ -2,34 +2,27 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
-  user_type: 'student' | 'teacher' | 'supervisor' | 'admin';
+  first_name: string;
+  last_name: string;
+  user_type: 'etudiant' | 'encadrant' | 'administrateur';
   num_etudiant?: string;
-  is_staff: boolean;
 }
 
 export interface Project {
   id: number;
   title: string;
   description: string;
-  teacher: User; 
+  teacher: User | number; 
   capacity: number;
-  domaine?: string;
-  statut_validation?: string;
+  domaine: string;
+  statut_validation: string;
 }
 
 export interface Wish {
   id: number;
-  student: User | number;
+  student: number;
   project: Project;
   rank: number;
-}
-
-export interface Assignment {
-  id: number;
-  student: User;
-  project: Project;
 }
 
 export interface Campaign {

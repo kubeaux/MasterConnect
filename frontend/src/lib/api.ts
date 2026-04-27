@@ -11,12 +11,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
+  const token = localStorage.getItem("access_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -126,45 +122,24 @@ export const assignmentsApi = {
 };
 
 export const login = async (username: string, password: string) => {
-  try {
-    const { data } = await axios.post(`${API_URL}/token/`, { username, password });
-    const token = data.access || data.token || data.access_token;
-    
-    if (!token) throw new Error("Aucun token reçu");
+  const { data } = await axios.post(`${API_URL}/token/`, { username, password });
+  
+  const accessToken = data.access;
+  localStorage.setItem('access_token', accessToken);
+  localStorage.setItem('refresh_token', data.refresh);
 
-    localStorage.setItem('access_token', token);
-    localStorage.setItem('refresh_token', data.refresh || token);
-    
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  let role: 'etudiant' | 'encadrant' | 'administrateur' = 'etudiant';
+  if (username.startsWith('admin')) role = 'administrateur';
+  else if (username.startsWith('prof')) role = 'encadrant';
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userId = payload.user_id || payload.id;
+  const userPayload = {
+    username,
+    user_type: role,
+    id: 1
+  };
 
-    let realUser;
-    try {
-        const { data: userData } = await api.get(`/users/${userId}/`);
-        realUser = userData;
-    } catch (e) {
-        console.warn("Déduction du rôle via le pseudo.");
-        let role = 'student';
-        if (username.includes('admin')) role = 'admin';
-        if (username.includes('prof') || username.includes('teacher')) role = 'teacher';
-        
-        realUser = {
-            id: userId,
-            username: username,
-            email: `${username}@univ.fr`,
-            user_type: role,
-            is_staff: role === 'admin'
-        };
-    }
-
-    localStorage.setItem('user', JSON.stringify(realUser));
-    return { token, user: realUser as User };
-
-  } catch (error) {
-    throw new Error('Identifiants incorrects ou serveur injoignable');
-  }
+  localStorage.setItem('user', JSON.stringify(userPayload));
+  return { token: accessToken, user: userPayload };
 };
 
 export const fetcher = (url: string) => api.get(url).then(res => res.data);
