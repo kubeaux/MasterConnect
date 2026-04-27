@@ -3,13 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GraduationCap, User, Lock, Loader2 } from 'lucide-react';
-import { login } from '@/src/lib/api';
 import { useAuth } from '@/src/components/providers/AuthProvider';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login: authLogin } = useAuth(); // On récupère la fonction du provider
+  const { login } = useAuth(); 
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -23,18 +22,20 @@ export default function LoginPage() {
     try {
       const response = await login(username, password);
       
-      authLogin(response.user, response.token);
-
       toast.success("Connexion réussie !");
 
       const role = response.user.user_type;
-      if (role === 'administrateur') router.push('/admin');
-      else if (role === 'encadrant') router.push('/supervisor');
-      else router.push('/student');
+      if (role === 'administrateur') {
+        router.push('/admin');
+      } else if (role === 'encadrant') {
+        router.push('/supervisor');
+      } else {
+        router.push('/student');
+      }
       
     } catch (error: any) {
-      console.error("Login Error:", error);
-      toast.error("Identifiants incorrects ou serveur éteint");
+      console.error(error);
+      toast.error("Identifiants incorrects");
     } finally {
       setIsLoading(false);
     }
