@@ -123,23 +123,18 @@ export const assignmentsApi = {
 
 export const login = async (username: string, password: string) => {
   const { data } = await axios.post(`${API_URL}/token/`, { username, password });
-  
-  const accessToken = data.access;
-  localStorage.setItem('access_token', accessToken);
+
+  localStorage.setItem('access_token', data.access);
   localStorage.setItem('refresh_token', data.refresh);
 
-  let role: 'etudiant' | 'encadrant' | 'administrateur' = 'etudiant';
-  if (username.startsWith('admin')) role = 'administrateur';
-  else if (username.startsWith('prof')) role = 'encadrant';
-
-  const userPayload = {
+  const userPayload = data.user ?? {
+    id: 0,
     username,
-    user_type: role,
-    id: user.id
+    user_type: 'etudiant' as const,
   };
 
   localStorage.setItem('user', JSON.stringify(userPayload));
-  return { token: accessToken, user: userPayload };
+  return { token: data.access, user: userPayload };
 };
 
 export const fetcher = (url: string) => api.get(url).then(res => res.data);
