@@ -2,11 +2,11 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  user_type: 'etudiant' | 'encadrant' | 'administrateur';
+  first_name?: string;
+  last_name?: string;
+  user_type: 'student' | 'teacher' | 'supervisor' | 'admin';
   num_etudiant?: string;
-  is_staff?: boolean;
+  is_staff: boolean;
 }
 
 export interface Project {
@@ -15,8 +15,8 @@ export interface Project {
   description: string;
   teacher: User; 
   capacity: number;
-  domaine: string;
-  statut_validation: string;
+  domaine?: string;
+  statut_validation?: string;
 }
 
 export interface Wish {

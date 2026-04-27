@@ -32,6 +32,7 @@ export default function Navbar() {
         ];
       case 'encadrant':
       case 'supervisor':
+      case 'teacher':
         return [
           { name: 'Tableau de bord', path: '/supervisor', icon: LayoutDashboard },
           { name: 'Projets', path: '/supervisor/projects', icon: FolderKanban },

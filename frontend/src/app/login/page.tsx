@@ -1,50 +1,37 @@
 "use client";
 
 import React, { useState } from 'react';
-import { GraduationCap, ArrowRight, User, Lock, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { GraduationCap, User, Lock, Loader2 } from 'lucide-react';
 import { login } from '@/src/lib/api';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const [showSignup, setShowSignup] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
+  const handleLogin = async (data: any) => {
     try {
-      const response = await login(username, password);
-      const role = response.user?.user_type;
-      const token = localStorage.getItem('access_token');
-
-      if (token) {
-        document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      }
-
-      toast.success("Connexion réussie !");
-
-      if (role === 'administrateur') {
-        window.location.href = '/admin';
-      } else if (role === 'encadrant') {
-        window.location.href = '/supervisor';
+      // Appel de notre fonction login blindée
+      const { user } = await login(data.username, data.password);
+      
+      if (user.is_staff || user.user_type === 'admin') {
+         router.push('/admin');
+      } else if (user.user_type === 'teacher' || user.user_type === 'supervisor') {
+         router.push('/supervisor');
       } else {
-        window.location.href = '/student';
+         router.push('/student');
       }
-
-    } catch (err) {
-      setError('Identifiants ou mot de passe incorrect.');
-      toast.error("Échec de la connexion");
-    } finally {
-      setIsLoading(false);
+      
+      toast.success('Connexion réussie !');
+    } catch (error) {
+      toast.error('Identifiants invalides');
     }
   };
-
   return (
     <div className="min-h-[calc(100-64px)] flex items-center justify-center p-4 bg-slate-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">

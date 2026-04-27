@@ -127,44 +127,43 @@ export const assignmentsApi = {
 
 export const login = async (username: string, password: string) => {
   try {
-    const response = await fetch(`${API_URL}/token/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!response.ok) {
-        const err = await response.json().catch(()=>({}));
-        console.error("Erreur retournée par Django:", err);
-        throw new Error('Identifiants incorrects');
-    }
-
-    const data = await response.json();
+    const { data } = await axios.post(`${API_URL}/token/`, { username, password });
     const token = data.access || data.token || data.access_token;
     
-    let roleUser = "etudiant";
-    if (username.startsWith("admin")) roleUser = "administrateur";
-    if (username.startsWith("prof")) roleUser = "encadrant";
+    if (!token) throw new Error("Aucun token reçu");
 
-    const extractedId = parseInt(username.split('_')[1] || "1");
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('refresh_token', data.refresh || token);
+    
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    const currentUser = {
-      id: extractedId,
-      username: username,
-      email: `${username}@univ-paris.fr`,
-      user_type: roleUser,
-      is_staff: roleUser === "administrateur"
-    };
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.user_id || payload.id;
 
-    if (token) {
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('refresh_token', data.refresh || token);
-      localStorage.setItem('user', JSON.stringify(currentUser));
+    let realUser;
+    try {
+        const { data: userData } = await api.get(`/users/${userId}/`);
+        realUser = userData;
+    } catch (e) {
+        console.warn("Déduction du rôle via le pseudo.");
+        let role = 'student';
+        if (username.includes('admin')) role = 'admin';
+        if (username.includes('prof') || username.includes('teacher')) role = 'teacher';
+        
+        realUser = {
+            id: userId,
+            username: username,
+            email: `${username}@univ.fr`,
+            user_type: role,
+            is_staff: role === 'admin'
+        };
     }
 
-    return { token, user: currentUser };
+    localStorage.setItem('user', JSON.stringify(realUser));
+    return { token, user: realUser as User };
+
   } catch (error) {
-    throw error;
+    throw new Error('Identifiants incorrects ou serveur injoignable');
   }
 };
 
