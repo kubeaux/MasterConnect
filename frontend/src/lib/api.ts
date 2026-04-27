@@ -143,15 +143,17 @@ export const login = async (username: string, password: string) => {
     const token = data.access || data.token || data.access_token;
     
     let roleUser = "etudiant";
-    if (username === "admin") roleUser = "administrateur";
-    if (username === "prof") roleUser = "encadrant";
+    if (username.startsWith("admin")) roleUser = "administrateur";
+    if (username.startsWith("prof")) roleUser = "encadrant";
+
+    const extractedId = parseInt(username.split('_')[1] || "1");
 
     const currentUser = {
-      id: 1,
+      id: extractedId,
       username: username,
-      email: `${username}@univ.paris.fr`,
-      role: roleUser,
-      date_creation: new Date().toISOString()
+      email: `${username}@univ-paris.fr`,
+      user_type: roleUser,
+      is_staff: roleUser === "administrateur"
     };
 
     if (token) {
@@ -159,10 +161,9 @@ export const login = async (username: string, password: string) => {
       localStorage.setItem('refresh_token', data.refresh || token);
       localStorage.setItem('user', JSON.stringify(currentUser));
     }
-    
-    return { ...data, user: currentUser };
+
+    return { token, user: currentUser };
   } catch (error) {
-    console.error('Erreur API Login:', error);
     throw error;
   }
 };

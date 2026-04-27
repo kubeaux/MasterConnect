@@ -1,71 +1,41 @@
-// ── Utilisateurs ──
 export interface User {
   id: number;
   username: string;
   email: string;
-  role: "etudiant" | "encadrant" | "administrateur";
-  date_creation: string;
+  first_name: string;
+  last_name: string;
+  user_type: 'etudiant' | 'encadrant' | 'administrateur';
+  num_etudiant?: string;
+  is_staff?: boolean;
 }
 
-export interface Student {
-  id: number;
-  utilisateur: User;
-  numero_etudiant: string;
-  prenom: string;
-  nom: string;
-  niveau?: "M1" | "M2";
-  moyenne_academique?: number;
-}
-
-export interface Supervisor {
-  id: number;
-  utilisateur: User;
-  prenom: string;
-  nom: string;
-}
-
-// ── Projets ──
 export interface Project {
   id: number;
-  titre: string;
+  title: string;
   description: string;
+  teacher: User; 
+  capacity: number;
   domaine: string;
-  mots_cles: string;
-  capacite: number;
-  capacite_min?: number;
-  nb_equipes_max?: number;
-  priorite?: "NORMALE" | "PRIORITAIRE";
-  statut_validation?: "EN_ATTENTE" | "APPROUVE" | "REFUSE";
-  encadrant: Supervisor;
-  campagne: number;
-  date_creation: string;
+  statut_validation: string;
 }
 
-// ── Voeux ──
 export interface Wish {
   id: number;
-  etudiant: number;
-  projet: Project;
-  campagne: number;
-  rang: number;
-  justification?: string;
-  date_creation: string;
+  student: User | number;
+  project: Project;
+  rank: number;
 }
 
-// ── Affectation ──
 export interface Assignment {
   id: number;
-  etudiant: Student;
-  projet: Project;
-  campagne: number;
-  date_affectation: string;
+  student: User;
+  project: Project;
 }
 
-// ── Campagne ──
 export interface Campaign {
   id: number;
-  statut: "OUVERTE" | "VERROUILLEE" | "PUBLIEE";
-  date_debut: string;
+  nom: string;
+  statut: 'OUVERTE' | 'VERROUILLEE' | 'PUBLIEE';
   date_fin: string;
 }
 

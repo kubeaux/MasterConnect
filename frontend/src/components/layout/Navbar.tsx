@@ -3,7 +3,7 @@
 import React, { useEffect,useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { GraduationCap, LogIn, Menu, X, Bell, LogOut, User } from 'lucide-react';
+import { GraduationCap, LogIn, Menu, X, Bell, LogOut, User, LayoutDashboard, BookOpen, Heart, FolderKanban } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@/src/components/providers/AuthProvider';
 
@@ -20,20 +20,21 @@ export default function Navbar() {
       ];
     }
     
-    const userRole = user.role?.toLowerCase();
+    const userRole = user.user_type?.toLowerCase();
 
     switch (userRole) {
       case 'etudiant':
       case 'student':
         return [
-          { name: 'Tableau de bord', path: '/student' },
-          { name: 'Mes vœux', path: '/student/wishes' },
+          { name: 'Tableau de bord', path: '/student', icon: LayoutDashboard },
+          { name: 'Catalogue', path: '/student/catalog', icon: BookOpen },
+          { name: 'Mes vœux', path: '/student/wishes', icon: Heart },
         ];
       case 'encadrant':
       case 'supervisor':
         return [
-          { name: 'Tableau de bord', path: '/supervisor' },
-          { name: 'Projets', path: '/supervisor/projects' },
+          { name: 'Tableau de bord', path: '/supervisor', icon: LayoutDashboard },
+          { name: 'Projets', path: '/supervisor/projects', icon: FolderKanban },
         ];
       case 'admin':
         return [
@@ -86,7 +87,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-3 pl-4 border-l border-blue-800">
                   <div className="text-right hidden lg:block">
                     <p className="text-sm font-semibold text-white">{user.username || 'Utilisateur'}</p>
-                    <p className="text-xs text-blue-300 capitalize">{user.role}</p>
+                    <p className="text-xs text-blue-300 capitalize">{user.user_type}</p>
                   </div>
                   <div className="h-9 w-9 rounded-full bg-blue-700 flex items-center justify-center border-2 border-blue-500">
                     <User className="h-5 w-5 text-blue-100" />

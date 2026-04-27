@@ -2,14 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from users.views import UserViewSet
+# Import de tes vues (Note l'ajout de MyTokenObtainPairView)
+from users.views import UserViewSet, MyTokenObtainPairView
 from projects.views import ProjectViewSet
 from wishes.views import WishViewSet
 from assignments.views import AssignmentViewSet
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -20,6 +18,9 @@ router.register(r'assignments', AssignmentViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    
+    # Utilisation de la vue personnalisée pour le login
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const response = await login(username, password);
-      const role = response.user?.role;
+      const role = response.user?.user_type;
       const token = localStorage.getItem('access_token');
 
       if (token) {

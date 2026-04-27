@@ -3,70 +3,72 @@ import django
 import random
 from faker import Faker
 
-# 1. Configuration de Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from users.models import User
 from projects.models import Project
-from wishes.models import Wish
 
-fake = Faker('fr_FR') # On utilise le français pour les noms
+fake = Faker(['fr_FR'])
 
-def run_seed():
-    print("--- Début de la génération des données (Seeding) ---")
+def run():
+    print("🧹 Nettoyage de la base...")
+    Project.objects.all().delete()
+    User.objects.all().delete()
 
-    # Nettoyage des anciennes données : this is an optional step
-    # Wish.objects.all().delete()
-    # Project.objects.all().delete()
-    # User.objects.exclude(username='imen').delete()
+    # 1. ADMINS (2)
+    print("🔑 Création des 2 Admins...")
+    for i in range(1, 3):
+        User.objects.create_superuser(
+            username=f'admin_{i}',
+            email=f'admin{i}@univ-paris.fr',
+            password='password123',
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            user_type='administrateur' # Crucial pour le Frontend
+        )
 
-    # 2. Création de 5 teachers
-    teachers = []
-    for _ in range(5):
-        teacher = User.objects.create_user(
-            username=fake.unique.user_name(),
+    # 2. ENCADRANTS (20)
+    print("👨‍🏫 Création des 20 Encadrants...")
+    supervisors = []
+    for i in range(1, 21):
+        u = User.objects.create_user(
+            username=f'prof_{i}',
             email=fake.unique.email(),
             password='password123',
-            user_type='teacher'
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            user_type='encadrant'
         )
-        teachers.append(teacher)
-    print(f" {len(teachers)} enseignants créés")
+        supervisors.append(u)
 
-    # 3. Création de 15 Projets de recherche
-    projects = []
-    topics = ["Intelligence Artificielle", "Blockchain", "Cybersécurité", "Optimisation ILS", "Web Sémantique", "Data Science"]
-    for _ in range(15):
-        project = Project.objects.create(
-            title=f"Étude sur {random.choice(topics)} - {fake.word().capitalize()}",
-            description=fake.text(max_nb_chars=200),
-            teacher=random.choice(teachers),
-            capacity=random.randint(2, 4)
-        )
-        projects.append(project)
-    print(f" {len(projects)} projets créés")
-
-    # 4. Création de 30 Étudiants et de leurs Vœux
-    for _ in range(30):
-        student = User.objects.create_user(
-            username=fake.unique.user_name(),
+    # 3. ÉTUDIANTS (300)
+    print("🎓 Création des 300 Étudiants...")
+    for i in range(1, 301):
+        User.objects.create_user(
+            username=f'etudiant_{i}',
             email=fake.unique.email(),
             password='password123',
-            user_type='student',
-            num_etudiant=fake.unique.random_number(digits=8)
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            user_type='etudiant',
+            num_etudiant=f'220{random.randint(10000, 99999)}'
         )
-        
-        # Chaque étudiant choisit 5 projets au hasard et les classe par preference
-        selected_projects = random.sample(projects, 5)
-        for i, project in enumerate(selected_projects):
-            Wish.objects.create(
-                student=student,
-                project=project,
-                rank=i + 1
-            )
-            
-    print(f" 30 étudiants et 150 vœux générés")
-    print("--- Seeding terminé avec succès ! ---")
+
+    # 4. PROJETS (50)
+    print("📁 Création des 50 Projets...")
+    sujets = ["IA", "Blockchain", "Web", "Mobile", "Sécurité", "Data Science", "Réseaux"]
+    for i in range(50):
+        Project.objects.create(
+            title=f"{random.choice(['Optimisation', 'Analyse', 'Développement'])} d'un système {random.choice(sujets)} {fake.word()}",
+            description=fake.paragraph(nb_sentences=3),
+            domaine=random.choice(['IA', 'Web', 'Data']),
+            teacher=random.choice(supervisors),
+            capacity=random.randint(2, 5),
+            statut_validation='APPROUVE'
+        )
+
+    print(f"✅ TERMINÉ ! {User.objects.count()} utilisateurs et {Project.objects.count()} projets créés.")
 
 if __name__ == '__main__':
-    run_seed()
+    run()
