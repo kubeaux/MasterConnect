@@ -5,7 +5,5 @@ from .serializers import ProjectSerializer
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    
-   #On autorise tout utilisateur connecté à voir les projets
-permission_classes = [permissions.AllowAny]
+    serializer_class = ProjectSerializer    
+    permission_classes = [permissions.AllowAny]

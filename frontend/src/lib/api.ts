@@ -135,7 +135,7 @@ export const login = async (username: string, password: string) => {
   const userPayload = {
     username,
     user_type: role,
-    id: 1
+    id: user.id
   };
 
   localStorage.setItem('user', JSON.stringify(userPayload));

@@ -7,13 +7,12 @@ class Wish(models.Model):
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
         related_name='student_wishes',
-        limit_choices_to={'user_type': 'student'}
+        limit_choices_to={'user_type': 'etudiant'}
     )
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     rank = models.PositiveIntegerField() # 1, 2, 3...
 
     class Meta:
-        # A student cannot assign the same rank to two different projects
         unique_together = ('student', 'rank')
         ordering = ['rank']
 

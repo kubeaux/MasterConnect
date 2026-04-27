@@ -11,11 +11,8 @@ class WishViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
-        if user.user_type == "admin":
+        if user.user_type == "administrateur":
             return Wish.objects.all()
-
-        if user.user_type == "student":
+        if user.user_type == "etudiant":
             return Wish.objects.filter(student=user)
-
         return Wish.objects.none()

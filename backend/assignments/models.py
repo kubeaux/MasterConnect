@@ -7,7 +7,7 @@ class Assignment(models.Model):
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
         related_name='final_assignment',
-        limit_choices_to={'user_type': 'student'}
+        limit_choices_to={'user_type': 'etudiant'}
     )
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
