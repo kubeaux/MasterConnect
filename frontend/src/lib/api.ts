@@ -102,8 +102,8 @@ export const adminApi = {
   getStats: () => api.get("/admin/stats/"),
   getSupervisors: () => api.get("/admin/supervisors/"),
   getStudents: () => api.get("/admin/students/"),
-  validateProject: (id: number) => api.post(`/admin/projects/${id}/validate/`),
-  rejectProject: (id: number) => api.post(`/admin/projects/${id}/reject/`),
+  validateProject: (id: number) => api.post(`/projects/${id}/approve/`),
+  rejectProject:   (id: number) => api.post(`/projects/${id}/reject/`),
   forceAssignment: (studentId: number, projectId: number | null) => 
       api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
 };

@@ -1,39 +1,36 @@
+# backend/wishes/serializers.py
 from rest_framework import serializers
 from .models import Wish
 
 class WishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wish
-        fields = [
-            'id',
-            'student',
-            'project',
-            'rank',
-        ]
-
+        fields = ['id', 'student', 'project', 'rank']
+        read_only_fields = ['student']
+        
     def validate(self, data):
-        student = data.get('student')
+        request = self.context.get('request')
+        student = request.user if request and request.user.is_authenticated else None
         project = data.get('project')
         rank = data.get('rank')
 
-        if student.user_type != 'student':
-            raise serializers.ValidationError("Only users with type 'student' can create wishes.")
+        if not student or student.user_type != 'etudiant':
+            raise serializers.ValidationError("Seuls les étudiants peuvent créer des vœux.")
 
-        if rank < 1 or rank > 5:
-            raise serializers.ValidationError("Rank must be between 1 and 5.")
+        if rank is None or rank < 1 or rank > 5:
+            raise serializers.ValidationError({"rank": "Le rang doit être entre 1 et 5."})
 
-        queryset = Wish.objects.filter(student=student)
-
+        qs = Wish.objects.filter(student=student)
         if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
+            qs = qs.exclude(pk=self.instance.pk)
 
-        if not self.instance and queryset.count() >= 5:
-            raise serializers.ValidationError("A student can have at most 5 wishes.")
+        if not self.instance and qs.count() >= 5:
+            raise serializers.ValidationError("Vous avez déjà 5 vœux.")
 
-        if queryset.filter(project=project).exists():
-            raise serializers.ValidationError("This student already selected this project.")
+        if qs.filter(project=project).exists():
+            raise serializers.ValidationError({"project": "Ce projet est déjà dans vos vœux."})
 
-        if queryset.filter(rank=rank).exists():
-            raise serializers.ValidationError("This student already used this rank.")
+        if qs.filter(rank=rank).exists():
+            raise serializers.ValidationError({"rank": "Ce rang est déjà utilisé."})
 
         return data

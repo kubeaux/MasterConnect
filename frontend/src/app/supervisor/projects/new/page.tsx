@@ -36,10 +36,10 @@ export default function NewProjectPage() {
     setIsSubmitting(true);
     try {
       const formattedData = {
-        title: data.titre,
-        department: data.domaine,
-        capacity: parseInt(data.capacite),
+        titre: data.titre,
+        capacite: parseInt(data.capacite),
         description: data.description,
+        domaine: data.domaine,
       };
 
       await projectsApi.create(formattedData);

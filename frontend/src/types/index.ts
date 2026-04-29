@@ -10,12 +10,18 @@ export interface User {
 
 export interface Project {
   id: number;
-  title: string;
+  titre: string;
   description: string;
-  teacher: User | number; 
-  capacity: number;
+  teacher: number;
+  teacher_name?: string;
+  capacite: number;
+  capacite_min?: number;
   domaine: string;
-  statut_validation: string;
+  mots_cles?: string;
+  statut_validation: 'EN_ATTENTE' | 'APPROUVE' | 'REFUSE';
+  priorite?: 'PRIORITAIRE' | 'NORMALE';
+  nb_equipes_max?: number;
+  encadrant?: { nom?: string; prenom?: string } | number;
 }
 
 export interface Wish {
