@@ -11,7 +11,6 @@ import { Reorder } from 'framer-motion';
 import { wishesApi, campaignApi } from "@/src/lib/api";
 import toast from "react-hot-toast";
 
-// --- Modale (Exactement calquée sur Figma) ---
 const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) => {
     if (!isOpen) return null;
     return (
@@ -112,7 +111,6 @@ export default function StudentWishesFigma() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 fade-in">
       
-      {/* Header avec bouton Enregistrer (En haut, design exact Figma) */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Ma Liste de Vœux</h1>
@@ -141,16 +139,15 @@ export default function StudentWishesFigma() {
         <Reorder.Group axis="y" values={wishes} onReorder={handleReorder} className="space-y-4">
           {wishes.map((wish) => {
             const project = wish.project;
-            const title = project?.title || project?.titre || `Projet #${wish.project_id}`;
+            const title = project?.titre || project?.title || `Projet #${wish.id}`;
             const domain = project?.department || project?.domaine || "Domaine non précisé";
-            const teacher = project?.teacher?.username || "Superviseur non assigné";
+            const teacher = project?.teacher_name || project?.teacher?.username || "Superviseur non assigné";
 
             return (
               <Reorder.Item 
                 key={wish.id} 
                 value={wish} 
                 dragListener={!isLocked}
-                // 🔥 LE SECRET EST ICI : L'animation whileDrag de ton code original
                 whileDrag={{ scale: 1.02, zIndex: 50, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0, 0 / 0.1)" }}
                 className={clsx(
                   "bg-white rounded-2xl border border-slate-200 p-5 transition-colors relative",
@@ -159,7 +156,6 @@ export default function StudentWishesFigma() {
               >
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-5">
-                    {/* Grip & Rank */}
                     <div className="flex items-center gap-3">
                       {!isLocked && <GripVertical className="text-slate-300" />}
                       <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2", getRankStyle(wish.rank))}>
@@ -167,7 +163,6 @@ export default function StudentWishesFigma() {
                       </div>
                     </div>
 
-                    {/* Infos Principales */}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-bold text-slate-900 truncate">{title}</h3>
                       <div className="flex items-center gap-3 mt-1">
@@ -177,7 +172,6 @@ export default function StudentWishesFigma() {
                       </div>
                     </div>
 
-                    {/* Actions : onPointerDown={e => e.stopPropagation()} empêche le bouton de déclencher le drag */}
                     <div className="flex gap-2">
                       <button 
                         onPointerDown={(e) => e.stopPropagation()}
@@ -198,14 +192,13 @@ export default function StudentWishesFigma() {
                     </div>
                   </div>
 
-                  {/* Motivation : Protégée du drag pour pouvoir écrire tranquillement */}
                   <div className="pl-[68px]">
                     <div className="relative group">
                       <div className="absolute left-3 top-3 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                         <MessageSquare className="w-4 h-4" />
                       </div>
                       <textarea
-                        onPointerDown={(e) => e.stopPropagation()} // 🔥 Permet de cliquer dans le texte sans déplacer la carte
+                        onPointerDown={(e) => e.stopPropagation()}
                         value={wish.motivation}
                         onChange={(e) => updateMotivation(wish.id, e.target.value)}
                         placeholder="Pourquoi ce projet vous intéresse-t-il ? (Optionnel)"
@@ -233,14 +226,13 @@ export default function StudentWishesFigma() {
         </div>
       )}
 
-      {/* --- Modal Détails --- */}
       {viewingProject && (
         <Modal isOpen={!!viewingProject} onClose={() => setViewingProject(null)} title="Fiche Projet">
           <div className="space-y-6">
             <div>
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">{viewingProject.department || viewingProject.domaine}</span>
               <h2 className="text-2xl font-bold text-slate-900 mt-1">{viewingProject.title || viewingProject.titre}</h2>
-              <p className="text-slate-500 text-sm mt-2">Sujet proposé par {viewingProject.teacher?.username}</p>
+              <p className="text-slate-500 text-sm mt-2">Sujet proposé par {viewingProject.teacher_name}</p>
             </div>
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Description</h4>

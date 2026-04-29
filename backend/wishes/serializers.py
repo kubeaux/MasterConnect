@@ -1,13 +1,22 @@
-# backend/wishes/serializers.py
 from rest_framework import serializers
 from .models import Wish
+from projects.serializers import ProjectSerializer
+from projects.models import Project
+
 
 class WishSerializer(serializers.ModelSerializer):
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+
     class Meta:
         model = Wish
         fields = ['id', 'student', 'project', 'rank']
         read_only_fields = ['student']
-        
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['project'] = ProjectSerializer(instance.project).data
+        return rep
+
     def validate(self, data):
         request = self.context.get('request')
         student = request.user if request and request.user.is_authenticated else None
