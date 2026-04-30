@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-fw-92vo$d%@i-$a4g^58vfb@1l(7%o7yzx0t6=h$74c$$@k#5-'
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["backend.masterconnect.aroundthesun.duckdns.org", "masterconnect.aroundthesun.duckdns.org", "localhost", "127.0.0.1"]
 
 
 # =========================
@@ -60,9 +60,7 @@ MIDDLEWARE = [
 ]
 #requests coming from react frontend allowed
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = ["https://masterconnect.aroundthesun.duckdns.org", "http://localhost:3000"]
 
 # Autorise l'envoi de headers spécifiques comme l'Authorization (pour les Tokens)
 CORS_ALLOW_HEADERS = [

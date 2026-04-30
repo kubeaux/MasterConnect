@@ -36,11 +36,11 @@ services:
 
   # ---- Frontend Next.js ----
   frontend:
-    build: ./frontend
+    build: ./Frontend
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - NEXT_PUBLIC_API_URL=https://backend.masterconnect.aroundthesun.duckdns.org/api
     depends_on:
       - backend
 
