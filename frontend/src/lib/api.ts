@@ -37,7 +37,9 @@ api.interceptors.response.use(
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
-        window.location.href = "/login";
+        if (typeof window !== "undefined" && !window.location.href.includes("/login")) {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }
@@ -106,6 +108,9 @@ export const adminApi = {
   rejectProject:   (id: number) => api.post(`/projects/${id}/reject/`),
   forceAssignment: (studentId: number, projectId: number | null) => 
       api.post('/assignments/force/', { etudiant_id: studentId, projet_id: projectId }),
+  getPendingSupervisors: () => api.get("/users/pending_supervisors/"),
+  approveSupervisor: (id: number) => api.post(`/users/${id}/approve/`),
+  rejectSupervisor: (id: number) => api.post(`/users/${id}/reject/`),
 };
 
 export const wishesApi = {

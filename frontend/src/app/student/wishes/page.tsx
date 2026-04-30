@@ -141,7 +141,7 @@ export default function StudentWishesFigma() {
             const project = wish.project;
             const title = project?.titre || project?.title || `Projet #${wish.id}`;
             const domain = project?.department || project?.domaine || "Domaine non précisé";
-            const teacher = project?.teacher_name || project?.teacher?.username || "Superviseur non assigné";
+            const teacher = project?.teacher_name || "Superviseur non assigné";
 
             return (
               <Reorder.Item 

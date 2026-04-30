@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { GraduationCap, LogIn, Menu, X, Bell, LogOut, User, LayoutDashboard, BookOpen, Heart, FolderKanban } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@/src/components/providers/AuthProvider';
+import { getUserDisplayName, getUserInitials } from '@/src/lib/utils';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -81,17 +82,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <button className="p-2 text-gray-300 hover:text-white transition-colors relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                </button>
                 <div className="flex items-center gap-3 pl-4 border-l border-blue-800">
                   <div className="text-right hidden lg:block">
-                    <p className="text-sm font-semibold text-white">{user.username || 'Utilisateur'}</p>
+                    <p className="text-sm font-semibold text-white">{getUserDisplayName(user)}</p>
                     <p className="text-xs text-blue-300 capitalize">{user.user_type}</p>
                   </div>
                   <div className="h-9 w-9 rounded-full bg-blue-700 flex items-center justify-center border-2 border-blue-500">
-                    <User className="h-5 w-5 text-blue-100" />
+                    {getUserInitials(user)}
                   </div>
                   <button 
                     onClick={logout}

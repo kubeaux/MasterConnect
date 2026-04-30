@@ -74,7 +74,7 @@ export default function StudentCatalogFigma() {
   };
 
   const domaines = ['Tous', ...Array.from(new Set(projects.map(p => p.department || p.domaine).filter(Boolean)))];
-  const supervisors = ['Tous', ...Array.from(new Set(projects.map(p => p.teacher?.username).filter(Boolean)))];
+  const supervisors = ['Tous', ...Array.from(new Set(projects.map(p => p.teacher_name).filter(Boolean)))];
   const allTechs = Array.from(new Set(projects.flatMap(p => getTags(p))));
   const techOptions = ['Toutes', ...allTechs];
 
@@ -110,7 +110,8 @@ export default function StudentCatalogFigma() {
         return;
       }
       try {
-        await wishesApi.create({ project: project.id, rank: myWishes.length + 1 });
+        const maxRank = Math.max(0, ...myWishes.map(w => w.rank || 0));
+        await wishesApi.create({ project: project.id, rank: maxRank + 1 });
         toast.success("Projet ajouté à vos vœux");
         loadData();
       } catch (e) { toast.error("Erreur lors de l'ajout"); }
@@ -228,7 +229,7 @@ export default function StudentCatalogFigma() {
                 </h3>
                 
                 <div className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mb-4">
-                   <UserCircle className="h-4 w-4 opacity-70"/> {project.teacher?.username || "Non assigné"}
+                   <UserCircle className="h-4 w-4 opacity-70"/> {project.teacher_name || "Non assigné"}
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 mb-5">

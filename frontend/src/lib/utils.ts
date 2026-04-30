@@ -29,3 +29,25 @@ export function parseKeywords(keywords?: string | null): string[] {
     .map((k) => k.trim())
     .filter(Boolean);
 }
+
+export function getUserDisplayName(user: { 
+  first_name?: string; 
+  last_name?: string; 
+  username: string 
+} | null | undefined): string {
+  if (!user) return '';
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+  return fullName || user.username;
+}
+
+export function getUserInitials(user: { 
+  first_name?: string; 
+  last_name?: string;
+  username: string 
+} | null | undefined): string {
+  if (!user) return '?';
+  if (user.first_name && user.last_name) {
+    return (user.first_name[0] + user.last_name[0]).toUpperCase();
+  }
+  return (user.username[0] || '?').toUpperCase();
+}

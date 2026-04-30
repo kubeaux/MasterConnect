@@ -16,7 +16,8 @@ const projectSchema = z.object({
   
   capacite: z.string()
     .min(1, "La capacité est requise")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, "Doit être un nombre supérieur ou égal à 1"),
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1 && Number(val) <= 10, 
+    "Doit être entre 1 et 10"),
     
   mots_cles: z.string().min(2, "Renseignez au moins un mot-clé (ex: Python, IA)"),
   description: z.string().min(20, "La description détaillée est requise (min. 20 caractères)"),
@@ -108,6 +109,8 @@ export default function NewProjectPage() {
                   <label className="block text-sm font-bold text-slate-700 mb-2">Capacité (Nb. étudiants) *</label>
                   <input 
                     type="number" 
+                    min="1"
+                    max="10"
                     {...register("capacite")}
                     placeholder="Ex: 3"
                     className={`w-full p-3 rounded-lg border text-sm outline-none transition-all ${errors.capacite ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}

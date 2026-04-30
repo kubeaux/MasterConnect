@@ -1,4 +1,3 @@
-# backend/wishes/views.py
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -42,9 +41,12 @@ class WishViewSet(viewsets.ModelViewSet):
             return Response({"error": "IDs ou rangs en doublon."}, status=400)
 
         with transaction.atomic():
+            for i, item in enumerate(payload):
+                Wish.objects.filter(id=item['id'], student=user).update(rank=10000 + i)
             for item in payload:
-                Wish.objects.filter(id=item['id'], student=user).update(rank=-abs(int(item['rank'])))
-            for item in payload:
-                Wish.objects.filter(id=item['id'], student=user).update(rank=int(item['rank']))
+                Wish.objects.filter(id=item['id'], student=user).update(
+                    rank=int(item['rank']),
+                    motivation=item.get('motivation', '')
+                )
 
         return Response({"status": "reordered", "count": len(payload)})

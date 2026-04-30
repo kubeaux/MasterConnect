@@ -10,6 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const tabs = [
     { href: '/admin', label: 'Vue d\'ensemble' },
     { href: '/admin/projects', label: 'Projets' },
+    { href: '/admin/supervisors', label: 'Encadrants' },
     { href: '/admin/students', label: 'Étudiants' },
     { href: '/admin/settings', label: 'Paramètres' },
   ];

@@ -32,3 +32,16 @@ class IsStudentForOwnWishes(BasePermission):
             and request.user.user_type == "etudiant"
             and obj.student == request.user
         )
+
+class IsProjectOwnerOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and request.user.user_type in ['encadrant', 'administrateur']
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        if request.user.user_type == 'administrateur':
+            return True
+        return obj.teacher == request.user

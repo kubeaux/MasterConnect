@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
-    # On multiplie les chances pour Nathan
     role = serializers.CharField(source='user_type')
     prenom = serializers.CharField(source='first_name')
     nom = serializers.CharField(source='last_name')
@@ -11,10 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'user_type', 'role', 
-            'first_name', 'last_name', 'prenom', 'nom', 'num_etudiant'
+            'first_name', 'last_name', 'prenom', 'nom', 
+            'num_etudiant', 'departement', 'statut_validation',
+            'date_joined', 'is_active'
         ]
-        # On s'assure que l'ID est en lecture seule
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'date_joined')
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer spécifique pour le profil de l'utilisateur connecté"""

@@ -9,7 +9,7 @@ class WishSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Wish
-        fields = ['id', 'student', 'project', 'rank']
+        fields = ['id', 'student', 'project', 'rank', 'motivation']
         read_only_fields = ['student']
 
     def to_representation(self, instance):

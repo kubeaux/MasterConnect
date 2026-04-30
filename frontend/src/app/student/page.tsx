@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { Wish, Campaign, Assignment } from "@/src/types";
 import toast from "react-hot-toast";
+import { getUserDisplayName } from "@/src/lib/utils";
 
 export default function StudentDashboardPage() {
   const { user } = useAuth();
@@ -87,7 +88,7 @@ export default function StudentDashboardPage() {
     <div className="page-container py-8 fade-in">
       <div className="mb-8">
         <h1 className="font-heading text-2xl font-bold text-gray-900">
-          Bonjour{user ? `, ${user.username}` : ""} 👋
+          Bonjour{user ? `, ${getUserDisplayName(user)}` : ""} 👋
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           Voici un résumé de votre campagne d&apos;attribution de projets.

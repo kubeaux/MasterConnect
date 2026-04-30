@@ -141,7 +141,7 @@ export default function AdminProjectsPage() {
                     {project.titre}
                   </div>
                   <div className="text-xs text-slate-500">
-                    {(project as any).teacher_name || "Encadrant inconnu"}
+                    {project.teacher_name || "Encadrant inconnu"}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-500">{project.domaine}</td>

@@ -1,11 +1,20 @@
 "use client";
-
+import { useAuth } from '@/src/components/providers/AuthProvider';
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, Users, CheckCircle } from 'lucide-react';
 
 export default function Home() {
+  const { user } = useAuth();
+
+  const ctaHref = user 
+  ? (user.user_type === 'administrateur' ? '/admin'
+    : user.user_type === 'encadrant' ? '/supervisor'
+    : '/student')
+  : '/login';
+  const ctaLabel = user ? 'Accéder à mon espace' : 'Se connecter à la plateforme';
+
   return (
     <div className="flex flex-col min-h-screen">
       <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
@@ -33,10 +42,10 @@ export default function Home() {
             </p>
             
             <Link 
-              href="/login"
+              href={ctaHref}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transform hover:-translate-y-1"
             >
-              Se connecter à la plateforme
+              {ctaLabel}
               <ArrowRight className="h-5 w-5" />
             </Link>
           </motion.div>

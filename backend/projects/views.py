@@ -1,14 +1,14 @@
 from rest_framework import viewsets, permissions
 from .models import Project
 from .serializers import ProjectSerializer
-from users.permissions import IsTeacherOrAdminReadOnlyOtherwise, IsAdminUserType
+from users.permissions import IsProjectOwnerOrAdmin, IsAdminUserType
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer    
-    permission_classes = [IsTeacherOrAdminReadOnlyOtherwise]
+    permission_classes = [IsProjectOwnerOrAdmin]
 
     def perform_create(self, serializer):
         serializer.save(

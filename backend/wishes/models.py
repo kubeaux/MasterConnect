@@ -10,7 +10,8 @@ class Wish(models.Model):
         limit_choices_to={'user_type': 'etudiant'}
     )
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    rank = models.PositiveIntegerField() # 1, 2, 3...
+    rank = models.PositiveIntegerField()
+    motivation = models.TextField(blank=True, default='')
 
     class Meta:
         unique_together = ('student', 'rank')

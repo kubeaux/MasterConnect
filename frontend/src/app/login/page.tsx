@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { GraduationCap, User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/src/components/providers/AuthProvider';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -90,6 +91,15 @@ export default function LoginPage() {
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Se connecter"}
           </button>
+          <div className="pt-4 border-t border-slate-100 text-center">
+            <span className="text-sm text-slate-500">Vous êtes encadrant et vous n'avez pas encore de compte ? </span>{' '}
+            <Link 
+              href="/register-supervisor" 
+              className="text-sm text-indigo-600 font-semibold hover:text-indigo-800"
+            >
+              Créer un compte
+            </Link>
+          </div>
         </form>
       </div>
     </div>
