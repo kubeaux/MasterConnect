@@ -1,7 +1,4 @@
 import os
-if os.environ.get('DJANGO_ENV') == 'production':
-    print("⚠️ Environnement de production détecté. Aucune donnée de test ne sera créée.")
-    exit(1)
 import django
 import random
 from faker import Faker
