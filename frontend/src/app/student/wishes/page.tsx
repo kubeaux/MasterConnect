@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Trash2, AlertCircle, GripVertical, 
@@ -65,8 +65,17 @@ export default function StudentWishesFigma() {
     setWishes(newOrder.map((w, index) => ({ ...w, rank: index + 1 })));
   };
 
+  const saveTimers = useRef<Record<number, NodeJS.Timeout>>({});
+
   const updateMotivation = (id: number, text: string) => {
     setWishes(prev => prev.map(w => w.id === id ? { ...w, motivation: text } : w));
+
+    if (saveTimers.current[id]) clearTimeout(saveTimers.current[id]);
+    saveTimers.current[id] = setTimeout(() => {
+      wishesApi.update(id, { motivation: text }).catch(() => {
+        toast.error("Impossible de sauvegarder l anote");
+      });
+    }, 800);
   };
 
   const removeWish = async (id: number) => {
