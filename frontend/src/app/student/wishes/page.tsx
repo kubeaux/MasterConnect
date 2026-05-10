@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Trash2, AlertCircle, GripVertical, 
-  Save, Loader2, Info, XCircle, ArrowLeft, MessageSquare, ArrowRight
+  Save, Loader2, Info, XCircle, ArrowLeft, ArrowRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Reorder } from 'framer-motion';
@@ -109,7 +109,7 @@ export default function StudentWishesFigma() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Ma Liste de Vœux</h1>
-          <p className="text-slate-500 mt-1">Organisez vos choix et précisez vos motivations.</p>
+          <p className="text-slate-500 mt-1">Organisez vos choix par ordre de préférence.</p>
         </div>
         {!isLocked && wishes.length > 0 && (
           <button
