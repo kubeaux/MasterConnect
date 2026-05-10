@@ -13,6 +13,12 @@ interface AdminStats {
   projets_valides: number;
   taux_affectation: number;
   sans_affectation: number;
+  repartition_voeux?: {
+    [key: string]: number;
+    non_demande: number;
+  };
+  total_voeux?: number;
+  total_projets?: number;
 }
 
 export default function AdminDashboardPage() {
@@ -50,36 +56,38 @@ export default function AdminDashboardPage() {
     setProgress(0);
 
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 150);
+      setProgress((prev) => (prev >= 90 ? prev : prev + 3));
+    }, 200);
 
     try {
-      await campaignApi.launchAlgorithm();
-      setTimeout(() => {
-        setIsComputing(false);
-        setShowResults(true);
-        toast.success("Attribution terminée !");
-        loadData();
-      }, 3500);
-    } catch {
+      const { data } = await campaignApi.launchAlgorithm();
+      clearInterval(interval);
+      setProgress(100);
+
+      await new Promise((r) => setTimeout(r, 400));
+
+      setIsComputing(false);
+      setShowResults(true);
+      toast.success(`Attribution terminée ! Coût final : ${data.cost ?? "—"}`);
+      await loadData();
+    } catch (err: any) {
       clearInterval(interval);
       setIsComputing(false);
-      toast.error("Erreur lors du lancement de l'algorithme");
+      const msg = err?.response?.data?.message || "Erreur lors du lancement de l'algorithme";
+      toast.error(msg);
     }
   };
 
-  const pieData = [
-    { name: "Vœu #1", value: 65, color: "#10b981" },
-    { name: "Vœu #2", value: 20, color: "#3b82f6" },
-    { name: "Vœu #3+", value: 10, color: "#f59e0b" },
-    { name: "Non attribué", value: stats?.sans_affectation || 0, color: "#ef4444" },
-  ];
+  const pieData = stats?.repartition_voeux
+  ? [
+      { name: "Vœu n°1", value: stats.repartition_voeux[1] || 0, color: "#10b981" },
+      { name: "Vœu n°2", value: stats.repartition_voeux[2] || 0, color: "#3b82f6" },
+      { name: "Vœu n°3", value: stats.repartition_voeux[3] || 0, color: "#6366f1" },
+      { name: "Vœu n°4", value: stats.repartition_voeux[4] || 0, color: "#f59e0b" },
+      { name: "Vœu n°5", value: stats.repartition_voeux[5] || 0, color: "#f97316" },
+      { name: "Non désiré", value: stats.repartition_voeux.non_demande || 0, color: "#ef4444" },
+    ].filter((d) => d.value > 0)
+  : [];
 
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>;
 

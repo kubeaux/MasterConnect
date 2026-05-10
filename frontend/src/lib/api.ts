@@ -74,29 +74,51 @@ export const campaignApi = {
     };
 
     try {
-      const assignRes = await api.get("/assignments/");
+      const [assignRes, wishRes, projRes] = await Promise.all([
+        api.get("/assignments/"),
+        api.get("/wishes/"),
+        api.get("/projects/"),
+      ]);
       const assignments = assignRes.data?.results || assignRes.data || [];
-      
-      if (assignments.length > 0) {
-        return { data: { id: 1, statut: "PUBLIEE", nom: "Campagne d'Affectation", ...defaultDates } };
-      }
-
-      const projRes = await api.get("/projects/");
+      const wishes = wishRes.data?.results || wishRes.data || [];
       const projects = projRes.data?.results || projRes.data || [];
 
-      if (projects.length > 0) {
-        return { data: { id: 1, statut: "OUVERTE", nom: "Campagne d'Affectation", ...defaultDates } };
+      // - PUBLIEE  : l'algo a tourné, des affectations existent
+      // - VERROUILLEE : projets + vœux présents, prêt à lancer l'algo
+      // - OUVERTE  : projets présents mais pas encore de vœux
+      let statut: "OUVERTE" | "VERROUILLEE" | "PUBLIEE";
+      if (assignments.length > 0) {
+        statut = "PUBLIEE";
+      } else if (projects.length > 0 && wishes.length > 0) {
+        statut = "VERROUILLEE";
+      } else {
+        statut = "OUVERTE";
       }
 
-      return { data: { id: 1, statut: "VERROUILLEE", nom: "Campagne d'Affectation", ...defaultDates } };
-
+      return {
+        data: {
+          id: 1,
+          statut,
+          nom: "Campagne d'Affectation 2025-2026",
+          annee_universitaire: "2025-2026",
+          ...defaultDates,
+        },
+      };
     } catch (error) {
-      return { data: { id: 1, statut: "OUVERTE", nom: "Campagne (Mode Secours)", ...defaultDates } };
+      return {
+        data: {
+          id: 1,
+          statut: "OUVERTE",
+          nom: "Campagne (Mode Secours)",
+          ...defaultDates,
+        },
+      };
     }
   },
 
+  launchAlgorithm: () => api.post("/assignments/launch_algorithm/"),
+
   updateStatus: (status: string) => Promise.resolve({ data: { statut: status } }),
-  launchAlgorithm: () => Promise.resolve({ data: { message: "Lancement de l'algorithme" } }),
   update: (id: number, data: any) => Promise.resolve({ data }),
 };
 
