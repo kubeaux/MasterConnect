@@ -315,14 +315,14 @@ export default function StudentCatalogFigma() {
                     <div className="p-2 bg-slate-50 rounded-lg border border-slate-100"><UserCircle className="h-5 w-5 text-slate-500" /></div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">Encadrant</p>
-                      <p className="text-sm font-bold text-slate-900">{viewingProject.teacher?.username || "Non assigné"}</p>
+                      <p className="text-sm font-bold text-slate-900">{viewingProject.teacher_name || "Non assigné"}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-50 rounded-lg border border-slate-100"><Users className="h-5 w-5 text-slate-500" /></div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">Capacité max.</p>
-                      <p className="text-sm font-bold text-slate-900">{viewingProject.capacity} places</p>
+                      <p className="text-sm font-bold text-slate-900">{viewingProject.capacite ?? viewingProject.capacity} places</p>
                     </div>
                  </div>
                </div>
