@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'user_type', 'role', 
             'first_name', 'last_name', 'prenom', 'nom', 
             'num_etudiant', 'departement', 'statut_validation',
-            'date_joined', 'is_active'
+            'date_joined', 'is_active', 'presentation'
         ]
         read_only_fields = ('id', 'date_joined')
 
@@ -20,4 +20,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer spécifique pour le profil de l'utilisateur connecté"""
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'user_type', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email', 'user_type', 'first_name', 'last_name',)

@@ -47,7 +47,8 @@ def register_supervisor(request):
         user_type='encadrant',
         departement=data.get('departement', ''),
         statut_validation='EN_ATTENTE',
-        is_active=False
+        is_active=False,
+        presentation=data.get('presentation', '')
     )
 
     return Response({

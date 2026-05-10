@@ -176,6 +176,18 @@ export default function RegisterSupervisorPage() {
               </div>
             </div>
 
+            {/* Présentation */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Présentation</label>
+              <textarea
+                value={form.presentation}
+                onChange={e => updateField('presentation', e.target.value)}
+                className="w-full border-slate-300 rounded-lg p-2.5 border focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                placeholder="Décrivez votre expérience et vos compétences..."
+                rows={4}
+              />
+            </div>
+
             {/* Info validation admin */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2 text-xs text-amber-800">
               <Building2 className="h-4 w-4 shrink-0 mt-0.5" />
