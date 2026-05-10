@@ -84,7 +84,7 @@ export default function StudentCatalogFigma() {
       .filter(p => {
         const matchesSearch = (p.title || p.titre || "").toLowerCase().includes(search.toLowerCase());
         const matchesDomaine = filterDomaine === 'Tous' || (p.department || p.domaine) === filterDomaine;
-        const matchesSupervisor = filterSupervisor === 'Tous' || p.teacher?.username === filterSupervisor;
+        const matchesSupervisor = filterSupervisor === 'Tous' || p.teacher_name === filterSupervisor;
         const matchesCapacity = filterCapacity === 'Toutes' || p.capacity === parseInt(filterCapacity);
         const matchesTech = filterTech === 'Toutes' || getTags(p).includes(filterTech);
         
