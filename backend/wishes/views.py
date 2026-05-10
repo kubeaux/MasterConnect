@@ -1,7 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db import transaction
+from rest_framework.exceptions import ValidationError
+from django.db import transaction, IntegrityError
 from .models import Wish
 from .serializers import WishSerializer
 from users.permissions import IsStudentForOwnWishes
@@ -13,7 +14,10 @@ class WishViewSet(viewsets.ModelViewSet):
     permission_classes = [IsStudentForOwnWishes]
 
     def perform_create(self, serializer):
-        serializer.save(student=self.request.user)
+        try:
+            serializer.save(student=self.request.user)
+        except IntegrityError:
+            raise ValidationError("Ce voeu existe déjà (conflit de concurrence).")
 
     def get_queryset(self):
         user = self.request.user

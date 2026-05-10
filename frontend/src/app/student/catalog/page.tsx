@@ -9,6 +9,7 @@ import { wishesApi, projectsApi, campaignApi } from "@/src/lib/api";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { clsx } from 'clsx';
 import toast from "react-hot-toast";
+import { da } from 'zod/v4/locales';
 
 const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) => {
     if (!isOpen) return null;
@@ -114,7 +115,17 @@ export default function StudentCatalogFigma() {
         await wishesApi.create({ project: project.id, rank: maxRank + 1 });
         toast.success("Projet ajouté à vos vœux");
         loadData();
-      } catch (e) { toast.error("Erreur lors de l'ajout"); }
+      } catch (e: any) {
+        const data = e?.response?.data;
+        const msg = 
+          data?.detail ||
+          data?.rank?.[0] ||
+          data?.project?.[0] ||
+          data?.non_field_errors?.[0] ||
+          "Erreur lors de l'ajout";
+        toast.error(msg);
+        loadData();
+      }
     }
   };
 
