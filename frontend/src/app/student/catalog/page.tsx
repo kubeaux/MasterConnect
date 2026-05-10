@@ -85,14 +85,14 @@ export default function StudentCatalogFigma() {
         const matchesSearch = (p.title || p.titre || "").toLowerCase().includes(search.toLowerCase());
         const matchesDomaine = filterDomaine === 'Tous' || (p.department || p.domaine) === filterDomaine;
         const matchesSupervisor = filterSupervisor === 'Tous' || p.teacher_name === filterSupervisor;
-        const matchesCapacity = filterCapacity === 'Toutes' || p.capacity === parseInt(filterCapacity);
+        const matchesCapacity = filterCapacity === 'Toutes' || ( p.capacite ?? p.capacity) === parseInt(filterCapacity);
         const matchesTech = filterTech === 'Toutes' || getTags(p).includes(filterTech);
         
         return matchesSearch && matchesDomaine && matchesSupervisor && matchesCapacity && matchesTech;
       })
       .sort((a, b) => {
         if (sortBy === 'title') return (a.title || a.titre || "").localeCompare(b.title || b.titre || "");
-        return (b.capacity || 0) - (a.capacity || 0);
+        return ((b.capacite ?? b.capacity) || 0) - ((a.capacite ?? a.capacity) || 0);
       });
   }, [projects, search, filterDomaine, filterSupervisor, filterCapacity, filterTech, sortBy]);
 
@@ -194,6 +194,7 @@ export default function StudentCatalogFigma() {
               <option value="2">2 places</option>
               <option value="3">3 places</option>
               <option value="4">4 places</option>
+              <option value="5">5 places</option>
             </select>
           </div>
         </div>
@@ -231,7 +232,7 @@ export default function StudentCatalogFigma() {
                   </span>
                   <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
                     <Users className="h-3.5 w-3.5" />
-                    {project.capacity} places
+                    {project.capacite ?? project.capacity} places
                   </div>
                 </div>
 
