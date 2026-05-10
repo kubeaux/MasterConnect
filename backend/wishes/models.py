@@ -11,7 +11,6 @@ class Wish(models.Model):
     )
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     rank = models.PositiveIntegerField()
-    motivation = models.TextField(blank=True, default='')
 
     class Meta:
         unique_together = ('student', 'rank')

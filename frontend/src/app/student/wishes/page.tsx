@@ -50,7 +50,6 @@ export default function StudentWishesFigma() {
       const normalizedWishes = rawWishes.map((w: any, index: number) => ({
         ...w,
         rank: index + 1,
-        motivation: w.motivation || ""
       }));
       setWishes(normalizedWishes);
       setCampaign(campRes.data);
@@ -65,19 +64,6 @@ export default function StudentWishesFigma() {
     setWishes(newOrder.map((w, index) => ({ ...w, rank: index + 1 })));
   };
 
-  const saveTimers = useRef<Record<number, NodeJS.Timeout>>({});
-
-  const updateMotivation = (id: number, text: string) => {
-    setWishes(prev => prev.map(w => w.id === id ? { ...w, motivation: text } : w));
-
-    if (saveTimers.current[id]) clearTimeout(saveTimers.current[id]);
-    saveTimers.current[id] = setTimeout(() => {
-      wishesApi.update(id, { motivation: text }).catch(() => {
-        toast.error("Impossible de sauvegarder l anote");
-      });
-    }, 800);
-  };
-
   const removeWish = async (id: number) => {
     try {
       await wishesApi.delete(id);
@@ -90,9 +76,9 @@ export default function StudentWishesFigma() {
   const saveOrder = async () => {
     setSaving(true);
     try {
-      const payload = wishes.map(w => ({ id: w.id, rank: w.rank, motivation: w.motivation }));
+      const payload = wishes.map(w => ({ id: w.id, rank: w.rank }));
       await wishesApi.reorder(payload);
-      toast.success("Classement et notes enregistrés !");
+      toast.success("Classement enregistré !");
       loadData();
     } catch (error) { toast.error("Erreur de sauvegarde"); }
     finally { setSaving(false); }
@@ -198,23 +184,6 @@ export default function StudentWishesFigma() {
                           <Trash2 className="w-5 h-5" />
                         </button>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="pl-[68px]">
-                    <div className="relative group">
-                      <div className="absolute left-3 top-3 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                        <MessageSquare className="w-4 h-4" />
-                      </div>
-                      <textarea
-                        onPointerDown={(e) => e.stopPropagation()}
-                        value={wish.motivation}
-                        onChange={(e) => updateMotivation(wish.id, e.target.value)}
-                        placeholder="Pourquoi ce projet vous intéresse-t-il ? (Optionnel)"
-                        className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-600 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-300 outline-none transition-all resize-none min-h-[45px]"
-                        rows={1}
-                        disabled={isLocked}
-                      />
                     </div>
                   </div>
                 </div>

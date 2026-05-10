@@ -48,7 +48,6 @@ def register_supervisor(request):
         departement=data.get('departement', ''),
         statut_validation='EN_ATTENTE',
         is_active=False,
-        presentation=data.get('presentation', '')
     )
 
     return Response({

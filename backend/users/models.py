@@ -22,4 +22,3 @@ class User(AbstractUser):
         choices=STATUT_VALIDATION_CHOICES,
         default='APPROUVE'
     )
-    presentation = models.TextField(blank=True, default='')

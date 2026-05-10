@@ -48,9 +48,6 @@ class WishViewSet(viewsets.ModelViewSet):
             for i, item in enumerate(payload):
                 Wish.objects.filter(id=item['id'], student=user).update(rank=10000 + i)
             for item in payload:
-                Wish.objects.filter(id=item['id'], student=user).update(
-                    rank=int(item['rank']),
-                    motivation=item.get('motivation', '')
-                )
+                Wish.objects.filter(id=item['id'], student=user).update(rank=int(item['rank']))
 
         return Response({"status": "reordered", "count": len(payload)})
