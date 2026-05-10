@@ -189,7 +189,7 @@ export default function StudentDashboardPage() {
                 Votre projet a été attribué !
               </h3>
               <p className="text-green-700">
-                <strong>{(assignment as any).projet?.titre || "Consultez les détails de votre affectation"}</strong>
+                <strong>{(assignment as any).project?.titre || "Consultez les détails de votre affectation"}</strong>
               </p>
               <Link
                 href="/student/result"

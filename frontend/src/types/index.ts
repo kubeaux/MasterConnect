@@ -38,6 +38,12 @@ export interface Campaign {
   date_fin: string;
 }
 
+export interface Assignment {
+  id: number;
+  student: number;
+  project: Project;
+}
+
 // ── Auth ──
 export interface LoginRequest {
   identifiant_universitaire: string;

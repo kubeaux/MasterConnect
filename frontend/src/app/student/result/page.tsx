@@ -74,10 +74,10 @@ export default function StudentResultPage() {
           <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8 text-left">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block">Projet Attribué</span>
             <h3 className="text-xl font-bold text-slate-900 mb-2">
-              {assignment.projet?.titre || "Titre du projet indisponible"}
+              {assignment.project?.titre || "Titre du projet indisponible"}
             </h3>
             <p className="text-slate-600 text-sm">
-              {assignment.projet?.description || "Aucune description détaillée."}
+              {assignment.project?.description || "Aucune description détaillée."}
             </p>
           </div>
           <div className="flex justify-center">
