@@ -22,14 +22,14 @@ def run_scale_test():
     Assignment.objects.all().delete()
     Wish.objects.all().delete()
     Project.objects.all().delete()
-    User.objects.filter(user_type__in=['student', 'teacher']).delete()
+    User.objects.filter(user_type__in=['etudiant', 'encadrant']).delete()
 
     print("--- 2. CRÉATION DES DONNÉES MASSIVES ---")
     
     # a. Création de 15 professeurs
     profs = []
     for i in range(1, 16):
-        prof = User.objects.create_user(username=f"prof_{i}", password="123", user_type="teacher")
+        prof = User.objects.create_user(username=f"prof_{i}", password="123", user_type="encadrant")
         profs.append(prof)
 
     # b. Création de 30 projets avec des capacités aléatoires (4 à 6 places)
@@ -53,7 +53,7 @@ def run_scale_test():
     # c. Création de 150 étudiants
     etudiants = []
     for i in range(1, 151):
-        etu = User.objects.create_user(username=f"etudiant_{i}", password="123", user_type="student")
+        etu = User.objects.create_user(username=f"etudiant_{i}", password="123", user_type="etudiant")
         etudiants.append(etu)
 
     # d. Création de 5 vœux par étudiant (750 vœux au total)

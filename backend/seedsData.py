@@ -68,6 +68,23 @@ def run():
             statut_validation='APPROUVE'
         )
 
+    # 5. VŒUX (5 par étudiant)
+    print("💖 Création des vœux pour chaque étudiant...")
+    from wishes.models import Wish
+
+    all_projects = list(Project.objects.all())
+    all_students = User.objects.filter(user_type='etudiant')
+
+    wishes_to_create = []
+    for student in all_students:
+        chosen_projects = random.sample(all_projects, k=min(5, len(all_projects)))
+        for rank, project in enumerate(chosen_projects, start=1):
+            wishes_to_create.append(
+                Wish(student=student, project=project, rank=rank)
+            )
+    Wish.objects.bulk_create(wishes_to_create)
+    print(f"✅ {len(wishes_to_create)} vœux créés ({all_students.count()} étudiants × 5).")
+
     print(f"✅ TERMINÉ ! {User.objects.count()} utilisateurs et {Project.objects.count()} projets créés.")
 
 if __name__ == '__main__':

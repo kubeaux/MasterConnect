@@ -1,4 +1,3 @@
-import sys
 import os
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -9,11 +8,7 @@ from wishes.models import Wish
 from assignments.models import Assignment
 
 # Import your ILS algorithm with the correct relative path
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../ILS'))
-try:
-    from matching import run_ils
-except ImportError as e:
-    print(f"Warning: Unable to import matching.py. Error: {e}")
+from ILS.matching import run_ils
 
 User = get_user_model()
 
@@ -25,7 +20,7 @@ def execute_ils_matching(max_iterations=100):
     # ==========================================
     # 1. DATA EXTRACTION AND TRANSLATION
     # ==========================================
-    student_ids = list(User.objects.filter(user_type='student').values_list('id', flat=True))
+    student_ids = list(User.objects.filter(user_type='etudiant').values_list('id', flat=True))
     if not student_ids:
         return {"success": False, "message": "No students found in the database."}
     
@@ -53,7 +48,7 @@ def execute_ils_matching(max_iterations=100):
     algorithm_result, final_cost = run_ils(
         students=student_ids,
         projects=projects_dict,
-        wishes=wishes_dict,
+        preferences=wishes_dict,
         max_iterations=max_iterations
     )
     print(f"Algorithm completed with a final cost of: {final_cost}")
