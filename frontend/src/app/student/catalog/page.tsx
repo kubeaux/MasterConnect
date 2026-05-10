@@ -277,7 +277,7 @@ export default function StudentCatalogFigma() {
                   {isAdded ? (
                     <><Trash2 className="h-4 w-4" /> Supprimer</>
                   ) : isLimitReached ? (
-                     <><XCircle className="h-4 w-4" /> Complet</>
+                     <><XCircle className="h-4 w-4" /> Limite 5 voeux atteinte</>
                   ) : (
                     <><Plus className="h-4 w-4" /> Ajouter</>
                   )}
