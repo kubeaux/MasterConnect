@@ -82,10 +82,7 @@ export const campaignApi = {
       const assignments = assignRes.data?.results || assignRes.data || [];
       const wishes = wishRes.data?.results || wishRes.data || [];
       const projects = projRes.data?.results || projRes.data || [];
-
-      // - PUBLIEE  : l'algo a tourné, des affectations existent
-      // - VERROUILLEE : projets + vœux présents, prêt à lancer l'algo
-      // - OUVERTE  : projets présents mais pas encore de vœux
+      
       let statut: "OUVERTE" | "VERROUILLEE" | "PUBLIEE";
       if (assignments.length > 0) {
         statut = "PUBLIEE";
@@ -108,7 +105,7 @@ export const campaignApi = {
       return {
         data: {
           id: 1,
-          statut: "OUVERTE",
+          statut: "OUVERTE" as const,
           nom: "Campagne (Mode Secours)",
           ...defaultDates,
         },

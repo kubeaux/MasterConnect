@@ -35,7 +35,14 @@ export interface Campaign {
   id: number;
   nom: string;
   statut: 'OUVERTE' | 'VERROUILLEE' | 'PUBLIEE';
+  date_debut: string;
   date_fin: string;
+  annee_universitaire?: string;
+  date_debut_soumission?: string;
+  date_fin_soumission?: string;
+  date_debut_voeux?: string;
+  date_fin_voeux?: string;
+  nb_equipes_max_defaut?: number;
 }
 
 export interface Assignment {
