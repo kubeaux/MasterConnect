@@ -86,8 +86,6 @@ export const campaignApi = {
       let statut: "OUVERTE" | "VERROUILLEE" | "PUBLIEE";
       if (assignments.length > 0) {
         statut = "PUBLIEE";
-      } else if (projects.length > 0 && wishes.length > 0) {
-        statut = "VERROUILLEE";
       } else {
         statut = "OUVERTE";
       }

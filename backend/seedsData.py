@@ -1,6 +1,7 @@
 import os
 import django
 import random
+from backend.wishes.models import Wish
 from faker import Faker
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -69,21 +70,21 @@ def run():
         )
 
     # 5. VŒUX (5 par étudiant)
-    print("💖 Création des vœux pour chaque étudiant...")
-    from wishes.models import Wish
+    #print("💖 Création des vœux pour chaque étudiant...")
+    #from wishes.models import Wish
 
-    all_projects = list(Project.objects.all())
-    all_students = User.objects.filter(user_type='etudiant')
+    #all_projects = list(Project.objects.all())
+    #all_students = User.objects.filter(user_type='etudiant')
 
-    wishes_to_create = []
-    for student in all_students:
-        chosen_projects = random.sample(all_projects, k=min(5, len(all_projects)))
-        for rank, project in enumerate(chosen_projects, start=1):
-            wishes_to_create.append(
-                Wish(student=student, project=project, rank=rank)
-            )
-    Wish.objects.bulk_create(wishes_to_create)
-    print(f"✅ {len(wishes_to_create)} vœux créés ({all_students.count()} étudiants × 5).")
+    #wishes_to_create = []
+    #for student in all_students:
+        #chosen_projects = random.sample(all_projects, k=min(5, len(all_projects)))
+        #for rank, project in enumerate(chosen_projects, start=1):
+            #wishes_to_create.append(
+                #Wish(student=student, project=project, rank=rank)
+            #)
+    #Wish.objects.bulk_create(wishes_to_create)
+    #print(f"✅ {len(wishes_to_create)} vœux créés ({all_students.count()} étudiants × 5).")
 
     print(f"✅ TERMINÉ ! {User.objects.count()} utilisateurs et {Project.objects.count()} projets créés.")
 
