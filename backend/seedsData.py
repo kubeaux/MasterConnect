@@ -1,7 +1,7 @@
 import os
 import django
 import random
-from backend.wishes.models import Wish
+#from backend.wishes.models import Wish
 from faker import Faker
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -26,7 +26,7 @@ def run():
             password='password123',
             first_name=fake.first_name(),
             last_name=fake.last_name(),
-            user_type='administrateur' # Crucial pour le Frontend
+            user_type='administrateur'
         )
 
     # 2. ENCADRANTS (20)

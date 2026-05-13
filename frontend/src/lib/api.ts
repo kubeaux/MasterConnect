@@ -68,48 +68,27 @@ export const projectsApi = {
 
 export const campaignApi = {
   getCurrent: async () => {
-    const defaultDates = {
-      date_debut: new Date().toISOString(),
-      date_fin: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
+  try {
+    const assignRes = await api.get("/assignments/");
+    const assignments = assignRes.data?.results || assignRes.data || [];
+    
+    // Seul l'existence d'affectations finales verrouille vraiment la campagne
+    const statut = assignments.length > 0 ? "PUBLIEE" : "OUVERTE";
+    
+    return {
+      data: {
+        id: 1,
+        statut,
+        nom: "Campagne d'Affectation 2025-2026",
+        annee_universitaire: "2025-2026",
+        date_debut: new Date().toISOString(),
+        date_fin: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
+      },
     };
-
-    try {
-      const [assignRes, wishRes, projRes] = await Promise.all([
-        api.get("/assignments/"),
-        api.get("/wishes/"),
-        api.get("/projects/"),
-      ]);
-      const assignments = assignRes.data?.results || assignRes.data || [];
-      const wishes = wishRes.data?.results || wishRes.data || [];
-      const projects = projRes.data?.results || projRes.data || [];
-      
-      let statut: "OUVERTE" | "VERROUILLEE" | "PUBLIEE";
-      if (assignments.length > 0) {
-        statut = "PUBLIEE";
-      } else {
-        statut = "OUVERTE";
-      }
-
-      return {
-        data: {
-          id: 1,
-          statut,
-          nom: "Campagne d'Affectation 2025-2026",
-          annee_universitaire: "2025-2026",
-          ...defaultDates,
-        },
-      };
-    } catch (error) {
-      return {
-        data: {
-          id: 1,
-          statut: "OUVERTE" as const,
-          nom: "Campagne (Mode Secours)",
-          ...defaultDates,
-        },
-      };
-    }
-  },
+  } catch {
+    return { data: { id: 1, statut: "OUVERTE" as const, /* ... */ } };
+  }
+},
 
   launchAlgorithm: () => api.post("/assignments/launch_algorithm/"),
 
